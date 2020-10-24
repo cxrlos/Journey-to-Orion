@@ -35,4 +35,4 @@ let object_array = [];
 
 ## License
 
-The license information can be reviewed in the [LICENSE](https://github.com/cxrlos/Journey_to_Orion/blob/main/LICENSE) file.
+The license information can be reviewed in the [LICENSE](https://github.com/cxrlos/Journey_to_Orion/blob/master/LICENSE) file.
