@@ -1,7 +1,9 @@
 <h1 align="center">Journey to Orion</h1>
 <h2 align="center">Computer Graphics</h2>
 <p align="center">Final Project</p>
-<p align="center">Ago-Dic 2020</p>
+<p align="center">Ago-Dic 2020</p><br>
+
+
 ## Authors
 - [Carla Pérez Gavilán](https://github.com/CarlaPerezGavilan)
 - [Carlos García](https://github.com/cxrlos)
