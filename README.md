@@ -1,6 +1,11 @@
 <h1 align="center">Journey to Orion</h1>
 <h2 align="center">Computer Graphics</h2>
 <p align="center">Final Project</p>
+<p align="center">Ago-Dic 2020</p>
+## Authors
+- [Carla Pérez Gavilán](https://github.com/CarlaPerezGavilan)
+- [Carlos García](https://github.com/cxrlos)
+- [Juan Francisco Gortarez](https://github.com/)
 
 ## Description
 Journey to Orion is a Space Exploration Simulator that puts you in the cockpit of a small spaceship in a big galaxy! Explore a vast 3D system with procedurally generated planets, ships, and asteroids, and attempt to reach different planets while keeping yourself safe from obstacles and avoiding collisions with tiny and not-so-tiny balls of rock. 
