@@ -27,18 +27,20 @@ The libraries used for the development are the following:
 ## How to Play
 You spawn near a planet, and in your screen you will get a prompt for the first planet you need to visit. You must navigate ships, obstacle and obstacles to reach that planet, under time pressure! After you reach a planet,the time you have to reach the next planet will decrease, and so you must go FASTER. When you lose, you will be able to see the leaderboard, and compare your results with those that came before you!
 
-
-## Initialize with inside spaceship PoV. 
+## Gameflow
+1. Initialize with inside spaceship PoV. 
+2. Movement options with keyboard (right, left, up or down) and rotation options with mouseGeneral Work-flow
 3. Update map position in dashboard to visualize mission completion status
 4. Warning alerts when approaching objects generated randomly. 
 5. Mission Complete: displays sign when reaching target planet. 
 6. Display scoreboard and play again option. 
-2. Movement options with keyboard (right, left, up or down) and rotation options with mouseGeneral Work-flow
-1. 
 
 ## Code Sections
 
 The code is separated into distinct parts that will be described in a simple fashion in the following subsections:
+
+## Work Plan
+- [TRELLO PLAN](https://trello.com/b/zfwuQ9vi)
 
 ### Global Variables
 ```javascript
