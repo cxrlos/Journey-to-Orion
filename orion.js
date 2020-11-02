@@ -9,6 +9,7 @@ let renderer = null,  scene = null, camera = null;
 let asteroidBelt, figure, solarSystem;
 let duration = 5000; 
 let currentTime = Date.now();
+let planets = [];
 
 /**
  * System is a class that contains all planets, it is created at the begining so that 
@@ -107,28 +108,14 @@ function animate()
     // Update scene controls 
     controls.update();
 
-    // Update all planets in planet array
-    solarSystem.planets.forEach( planet =>
-    {
-        // Update rotation of planet on its own speed (axis rotation)
-        planet.object.rotation.z += planet.axis_speed;
+    // Planets rotation in own axis
+    planets.forEach( planet => {
+        planet.rotation.z += 0.05;
+    }
+    );
 
-        // Update rotation of each moon on its own access
-        planet.moons.forEach( m =>
-        {
-            m.rotation.z += 0.001;
-        });
 
-        // Update rotation of moons around planet (moon rotation)
-        planet.privotCenter.rotation.z += planet.moon_speed;
-
-        // Update rotation of planet around sun (orbital rotation)
-        planet.pivotSun.rotation.z += planet.sun_speed;
         
-    });
-
-    // Rotation of asteroid belt 
-    asteroidBelt.rotation.z += 0.01;
 }
 
 /**
@@ -143,6 +130,18 @@ function run()
 
     // Update rotations calling animate 
     animate();
+}
+
+function generateRandom(max_pos, min_pos){
+    var c = 0;
+    setInterval(function() {
+        let rand_x = Math.random()* (max_pos - min_pos) + min_pos;
+        let rand_y = Math.random()* (max_pos - min_pos) + min_pos;
+        let planet = addPlanet(30, rand_x, rand_y, "./models/planets/gas_giants/Gaseous1.png", 1, 0, "");
+        planets.push(planet);
+        scene.add(planet);
+        console.log("added planet!");
+      }, 5000);
 }
 
 /**
@@ -195,79 +194,9 @@ function createScene()
     //Adding pointlight to sceen 
     scene.add(pointLight); 
 
-    // Creation of orbits with for cycle 
-    let initial = 50;
-    let increment = 70;
-    let incr = 10;
-    for(var i = 0; i<10; i++)
-    {
-        let radius = initial + increment*i+ i*10;
-        if(i != 4)
-        {
-            addOrbit(radius);
-        }
-    }
+    //Generates plantes randomly
+    generateRandom(500, -500);
 
-    // Creating the sun 
-    let sun = addPlanet(30, 0, 0, "../../images/lavatile.jpg", 1, 0, "");
-    scene.add(sun);
-
-    // Initializing SolarSystem Object to store planets
-    solarSystem = new System();
-
-
-    // Creating mercury and adding to Solar system 
-    let mercury = addPlanet(5, 50, 2.5, "../../images/system/mercury.jpg", 0, 1, "../../images/systembump/mercury_bump.jpg");
-    solarSystem.newPlanet(mercury, 0, 0.01, 0.01, 0.02, 5);
-
-
-    // Creating venus and adding to Solar system 
-    let venus = addPlanet(6, 130, 3,  "../../images/system/venus.jpg", 0, 1, "../../images/systembump/venus_bump.jpg");
-    solarSystem.newPlanet(venus, 0, 0.01, 0.008, 0.01, 6);
-
-    // Creating earth and adding to Solar system 
-    let earth = addPlanet(7, 210, 3.5,  "../../images/system/earth.jpg", 0, 1, "../../images/systembump/earth_bump.jpg");
-    solarSystem.newPlanet(earth, 1, 0.01, 0.009, 0.01, 7);
-
-    // Creating mars and adding to Solar system 
-    let mars = addPlanet(6, 290, 3,  "../../images/system/mars.jpg", 0, 1, "../../images/systembump/mars_bump.jpg");
-    solarSystem.newPlanet(mars, 2, 0.01, 0.005, 0.02, 6);
-
-    // Creating asteroid belt 
-    let rad = 370;
-    asteroidBelt = new THREE.Object3D();
-    // For cycle to iterate around the circle
-    for(let i = 0; i<Math.PI*2; i+=0.05)
-    {
-        let x = Math.cos(i) * rad;
-        let y = Math.sin(i) * rad;
-        addAsteroid(2, x, y);
-    }
-    scene.add(asteroidBelt);
-
-    // Creating Jupiter and adding to Solar system 
-    let jupiter = addPlanet(20, 450, 10, "../../images/system/jupiter.jpg", 0 , 0, " ");
-    solarSystem.newPlanet(jupiter, 15, 0.01, 0.002, 0.019, 20);
-
-    // Creating Saturn, adding two rings and adding to Solar System
-    let saturn = addPlanet(15, 530, 7.5, "../../images/system/saturn.jpg", 0, 0, " ");
-    addRing(saturn, 22, "../../images/system/satrurnring.jpg", 530, 7.5);
-    addRing(saturn, 16.8, "../../images/system/satrurnring.jpg", 530, 7.5);
-    solarSystem.newPlanet(saturn, 15, 0.01, 0.004, 0.013, 15);
-
-    // Creating Uranus, adding two rings and adding to solar system
-    let uranus = addPlanet(10, 610, 5,  "../../images/system/uranus.jpg", 0, 0, " ");
-    addRing(uranus, 17, "../../images/system/uranus_ring.jpg", 610, 5);
-    addRing(uranus, 11.5, "../../images/system/uranus_ring.jpg", 610, 5);
-    solarSystem.newPlanet(uranus, 15, 0.01, 0.002, 0.017, 10);
-
-    //Creating Neptune and adding to solar system 
-    let neptune = addPlanet(10, 690, 5,  "../../images/system/neptune.jpg", 0, 0, " ");
-    solarSystem.newPlanet(neptune, 14, 0.01, 0.0015, 0.011, 10);
-
-    //Creating Pluto and adding to solar system
-    let pluto = addPlanet(10, 770, 5,  "../../images/system/pluto.jpg", 0, 1, "../../images/systembump/pluto_bump.jpg");
-    solarSystem.newPlanet(pluto, 5, 0.01, 0.003, 0.015, 10);
 
 }
 
