@@ -188,6 +188,27 @@ function createScene(){
     //Adding pointlight to sceen 
     scene.add(pointLight); 
 
+    {
+    const loader = new THREE.CubeTextureLoader();
+    const texture = loader.load([
+      '../textures/skybox/corona_ft.png',
+      '../textures/skybox/corona_bk.png',
+      '../textures/skybox/corona_up.png',
+      '../textures/skybox/corona_dn.png',
+      '../textures/skybox/corona_rt.png',
+      '../textures/skybox/corona_lf.png',
+    ]);
+    scene.background = texture;
+  }
+
+    let plane_geometry = new THREE.PlaneGeometry( 35, 20, 32 );
+    textureMap = new THREE.TextureLoader().load("../textures/cockpit/dashboard.png");
+    let plane_material = new THREE.MeshBasicMaterial( {map: textureMap, transparent:true, side: THREE.DoubleSide} );
+    let plane = new THREE.Mesh( plane_geometry, plane_material );
+    plane.position.set(0,0,-20);
+    plane.rotation.set(0,0,0);
+    camera.add( plane );
+
     // Creating the sun 
     let sun = addPlanet(30, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
     scene.add(sun);
