@@ -10,9 +10,12 @@ let asteroidBelt, figure, solarSystem;
 let duration = 5000;
 let currentTime = Date.now();
 let spaceships = null;
-
+let paths = [];
 let lookSpeed = 0.05;
 let velocity = 150;
+let spaceshipNo = 20;
+let loopDuration = 20000;
+let loopStart = Date.now();
 
 
 var xSpeed = 0.00001;
@@ -124,6 +127,25 @@ class Planet {
 function animate() {
     // Update scene controls 
     controls.update(clock.getDelta());
+
+    let timer = Date.now();
+    let delta = timer - loopStart;
+    for (let r = 0; r < spaceshipNo; r++) {
+
+        if (delta < loopDuration) {
+            spaceships.children[r].translateZ(paths[r]);
+        }
+        else {
+            spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
+            //paths[r] = -paths[r];
+            loopStart = Date.now();
+        }
+
+
+
+    }
+
+
 }
 
 /**
@@ -189,11 +211,19 @@ function createScene() {
 
     //Load and generate the spaceship at a random point in space
     spaceships = new THREE.Object3D;
-    let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.1 };
+    let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.4 };
     let lowerLimit = [40, 40, 40];
-    let upperLimit = [100, 100, 100];
+    let upperLimit = [200, 200, 200];
 
-    spaceshipMultigen(objModelUrl, 20, lowerLimit, upperLimit);
+    spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);
+
+    for (let i = 0; i < spaceshipNo; i++) {
+        let z = Math.random();
+
+        paths.push(z);
+    }
+
+
     //genSpaceship(objModelUrl, spaceships, 60, 60, 40);
 
     //Adding pointlight to sceen 
@@ -238,7 +268,7 @@ function spaceshipMultigen(objModelUrl, number, lowerLimit, upperLimit) {
  * 
 **/
 function genSpaceship(objModelUrl, objectList, x, y, z) {
-    ship = loadObj(objModelUrl, objectList, x, y, z);
+    loadObj(objModelUrl, objectList, x, y, z);
 }
 
 function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
@@ -296,7 +326,6 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;
         let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;
 
-        console.log(object);
 
         object.traverse(function (child) {
             if (child instanceof THREE.Mesh) {
@@ -312,9 +341,17 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         object.position.z = z;
         object.position.x = x;
         object.position.y = y;
-        object.rotation.y = Math.floor(Math.random() * 360);
+        object.rotation.y = 2 * Math.PI;
         object.name = "Spaceship";
-        objectList.add(object);
+
+        let PivotPoint = new THREE.Object3D;
+
+        PivotPoint.add(object);
+        PivotPoint.position.z = z;
+        PivotPoint.position.x = x;
+        PivotPoint.position.y = y;
+        PivotPoint.rotation.y = Math.floor(Math.random() * 360);
+        objectList.add(PivotPoint);
 
     }
     catch (err) {
