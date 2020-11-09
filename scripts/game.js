@@ -6,8 +6,9 @@ Carlos García,
 
 // Declaration of all global variables
 let renderer = null,  scene = null, camera = null;
-let asteroidBelt, figure, solarSystem;
-let duration = 5000; 
+let asteroidBelt, figure;
+let firstSystem, secondSystem, thirdSystem;
+let duration = 5000;
 let currentTime = Date.now();
 
 var xSpeed = 0.00001;
@@ -32,7 +33,7 @@ function onDocumentKeyDown(event) {
 };
 
 /**
- * System is a class that contains all planets, it is created at the begining so that 
+ * System is a class that contains all planets, it is created at the begining so that
  * we can iterate all planets and update them
  * @constructor
  */
@@ -40,51 +41,51 @@ class System {
     constructor() {
         this.planets = [];
     }
-    newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius) {
-        let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius);
+    newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
+        let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y);
         this.planets.push(p);
     }
 }
 
 /**
- * Planet is a class that constructs a planet with all of its necessary speeds and pivotPoints 
+ * Planet is a class that constructs a planet with all of its necessary speeds and pivotPoints
  * @param object: the planet mesh
- * @param moons: number of moons this planet has 
+ * @param moons: number of moons this planet has
  * @param axis_speed: speed of rotation on its own axis
  * @param sun_speed: speed of rotation around the sun
  * @param moon_speed: speed of rotation of moons around planet
- * @param radius: planet's radius 
+ * @param radius: planet's radius
  */
 class Planet
 {
-    constructor(object, moons, axis_speed, sun_speed, moon_speed, radius)
+    constructor(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y)
     {
 
-        // Create an empty object of type all and 
+        // Create an empty object of type all and
         this.all = new THREE.Object3D();
         this.all.add(object);
         this.object = object;
 
         // Create empty object as pivot point in reference to Sun
         this.pivotSun = new THREE.Object3D();
-        this.pivotSun.position.set(0, 0, 0);
+        this.pivotSun.position.set(sun_x, sun_y, 0);
         this.pivotSun.rotation.set(0, 0, 0);
 
-        // Add planet to sun pivot point 
+        // Add planet to sun pivot point
         this.pivotSun.add(object);
 
         // Add all other objects to pivotSun
         this.pivotSun.add(this.all);
 
-        // Add pivotSun to the scene 
+        // Add pivotSun to the scene
         scene.add(this.pivotSun);
 
-        // Create empty object as pivot of rotating moves in reference to center of planet 
+        // Create empty object as pivot of rotating moves in reference to center of planet
         this.privotCenter = new THREE.Object3D();
         this.privotCenter.position.set(object.position.x, object.position.y, 0);
         this.privotCenter.rotation.set(0, 0, 0);
 
-        // Add center of planet to all empty object 
+        // Add center of planet to all empty object
         this.all.add(this.privotCenter);
 
         // Other variables: moon array and speed
@@ -92,8 +93,8 @@ class Planet
         this.axis_speed = axis_speed;
         this.sun_speed = sun_speed;
         this.moon_speed = moon_speed;
-       
-        // Create number of moons per planet in random positions around planet 
+
+        // Create number of moons per planet in random positions around planet
         for(var i=0; i<moons; i++)
         {
             // Generate random angle from 0-2*PI
@@ -105,7 +106,7 @@ class Planet
             // Use function to add planet in random position with texture
             let m = addPlanet(2, ran_x, ran_y, "../../images/system/moon.jpg", 0, 1, "../../images/moon_bump.jpg");
 
-            // Add moon to moon array 
+            // Add moon to moon array
             this.moons.push(m);
 
             // Add moon to pivot center, so that it can rotate around planet
@@ -120,20 +121,67 @@ class Planet
  */
 
 function animate(){
-    // Update scene controls 
+    // Update scene controls
     controls.update(clock.getDelta());
+
+
+    // FirstSystem: Update all planets in planet array
+    firstSystem.planets.forEach( planet =>
+        {
+            // Update rotation of planet on its own speed (axis rotation)
+            planet.object.rotation.z += planet.axis_speed;
+
+
+            // Update rotation of moons around planet (moon rotation)
+            planet.privotCenter.rotation.z += planet.moon_speed;
+
+            // Update rotation of planet around sun (orbital rotation)
+            planet.pivotSun.rotation.z += planet.sun_speed;
+
+        });
+
+
+    // SecondSystem: Update all planets in planet array
+    secondSystem.planets.forEach( planet =>
+        {
+            // Update rotation of planet on its own speed (axis rotation)
+            planet.object.rotation.z += planet.axis_speed;
+
+
+            // Update rotation of moons around planet (moon rotation)
+            planet.privotCenter.rotation.z += planet.moon_speed;
+
+            // Update rotation of planet around sun (orbital rotation)
+            planet.pivotSun.rotation.z += planet.sun_speed;
+
+        });
+
+        // ThirdSystem: Update all planets in planet array
+        thirdSystem.planets.forEach( planet =>
+        {
+            // Update rotation of planet on its own speed (axis rotation)
+            planet.object.rotation.z += planet.axis_speed;
+
+
+            // Update rotation of moons around planet (moon rotation)
+            planet.privotCenter.rotation.z += planet.moon_speed;
+
+            // Update rotation of planet around sun (orbital rotation)
+            planet.pivotSun.rotation.z += planet.sun_speed;
+
+        });
 }
 
 /**
- * RUN: it renders scene and camera, calls animate 
+ * RUN: it renders scene and camera, calls animate
  */
 function run(){
     requestAnimationFrame(function() { run(); });
-    
+
     // Render the scene
     renderer.render( scene, camera );
 
-    // Update rotations calling animate 
+    // Update rotations calling animate
     animate();
 }
 
@@ -141,8 +189,8 @@ function run(){
  * createScene: Initializes all objects on the scene before any updates
  */
 
-function createScene(){    
-    // Creation of renderer and setting size to browser window size 
+function createScene(){
+    // Creation of renderer and setting size to browser window size
     renderer = new THREE.WebGLRenderer({antialias: true });
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
@@ -153,12 +201,12 @@ function createScene(){
     // Create camera with ratio of window
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth/ window.innerHeight, 1, 10000 );
 
-    // Create orbit controls for Obrit Controller
+    // Create first Person Controls
     controls = new THREE.FirstPersonControls( camera, renderer.domElement );
-    controls.movementSpeed = 50;
-    controls.lookSpeed=0.3;
+    controls.movementSpeed = 20;
+    controls.lookSpeed = 0.05;
 
-    // Start scene background with black 
+    // Start scene background with black
     scene.background = new THREE.Color( 0, 0, 0 );
 
     // Initialize camara position on top of solar system
@@ -167,22 +215,22 @@ function createScene(){
 
     controls.update(clock.getDelta());
 
-    // Add camara to scene 
+    // Add camara to scene
     scene.add(camera);
 
-    // Create ambient light to iluminate all scene when sun isn't iluminating it 
+    // Create ambient light to iluminate all scene when sun isn't iluminating it
     let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(ambientLight);
 
-    // Creating point light that simulates sun light 
-    var pointColor = "#ffffff"; 
-    var pointLight = new THREE.PointLight(pointColor); 
+    // Creating point light that simulates sun light
+    var pointColor = "#ffffff";
+    var pointLight = new THREE.PointLight(pointColor);
 
     // Set sun's point light to center
     pointLight.position.set(0,0,0);
     pointLight.intensity = 2.0;
 
-    // Making sure pointLight casts shadow 
+    // Making sure pointLight casts shadow
     pointLight.castShadow = true;
 
     //Adding pointlight to sceen 
@@ -212,6 +260,102 @@ function createScene(){
     // Creating the sun 
     let sun = addPlanet(30, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
     scene.add(sun);
+
+    let all_textures = [
+        "inhospitable/Volcanic.png",
+        "inhospitable/Icy.png",
+        "inhospitable/Martian.png",
+        "inhospitable/Venusian.png",
+        "gas_giants/Gaseous1.png",
+        "gas_giants/Gaseous2.png",
+        "gas_giants/Gaseous3.png",
+        "gas_giants/Gaseous4.png",
+        "habitable/Alpine.png",
+        "habitable/Savannah.png",
+        "habitable/Swamp.png",
+        "habitable/Tropical.png",
+        "terrestrial/Terrestrial1.png",
+        "terrestrial/Terrestrial2.png",
+        "terrestrial/Terrestrial3.png",
+        "terrestrial/Terrestrial4.png"
+    ]
+    let random_texture_index = 0;
+    // First System
+    firstSystem = new System();
+
+    // Sun First System addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
+    let sun_a = addPlanet(180, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
+    scene.add(sun_a);
+
+    random_texture_index = Math.round(Math.random()*15);
+    console.log(all_textures[0]);
+    console.log(random_texture_index);
+
+    let planetA1 = addPlanet(100, 60, 2.5, "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    firstSystem.newPlanet(planetA1, 0, 0.01, 0.01, 0.02, 5, sun_a.position.x, sun_a.position.y);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetA2 = addPlanet(130, 850, 3,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    firstSystem.newPlanet(planetA2, 0, 0.01, 0.008, 0.01, 6, sun_a.position.x, sun_a.position.y);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetA3 = addPlanet(80, 1100, 3.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    firstSystem.newPlanet(planetA3, 0, 0.01, 0.009, 0.01, 7, sun_a.position.x, sun_a.position.y);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetA4 = addPlanet(110, 1800, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    firstSystem.newPlanet(planetA4, 0, 0.01, 0.005, 0.02, 6, sun_a.position.x, sun_a.position.y);
+
+    //  Second System
+    secondSystem = new System();
+
+    // Seocnd System Sun  addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
+    let sun_b = addPlanet(200, 1000, 5000, "../models/planets/inhospitable/Venusian.png", 1, 0, "");
+    scene.add(sun_b);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetB1 = addPlanet(120, 400, 2.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB1, 0, 0.01, 0.01, 0.02, 5, sun_b.position.x, sun_b.position.y);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetB2 = addPlanet(90, 800, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB2, 0, 0.01, 0.008, 0.01, 6, sun_b.position.x, sun_b.position.y);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetB3 = addPlanet(80, 1200, 3.5,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB3, 0, 0.01, 0.009, 0.01, 7, sun_b.position.x, sun_b.position.y);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetB4 = addPlanet(150, 1600, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB4, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
+
+    random_texture_index = Math.round(Math.random()*15);
+    let planetB5 = addPlanet(95, 2400, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB5, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
+
+     //  Second System
+     thirdSystem = new System();
+
+     // Seocnd System Sun  addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
+     let sun_c = addPlanet(400, -7000, -3000, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
+     scene.add(sun_c);
+ 
+     random_texture_index = Math.round(Math.random()*15);
+     let planetC1 = addPlanet(150, 1000, 2.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+     thirdSystem.newPlanet(planetC1, 0, 0.01, 0.01, 0.02, 5, sun_c.position.x, sun_c.position.y);
+ 
+     random_texture_index = Math.round(Math.random()*15);
+     let planetC2 = addPlanet(400, 1200, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+     thirdSystem.newPlanet(planetC2, 0, 0.01, 0.008, 0.01, 6, sun_c.position.x, sun_c.position.y);
+ 
+     random_texture_index = Math.round(Math.random()*15);
+     let planetC3 = addPlanet(120, 1400, 3.5,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+     thirdSystem.newPlanet(planetC3, 0, 0.01, 0.009, 0.01, 7, sun_c.position.x, sun_c.position.y);
+ 
+     random_texture_index = Math.round(Math.random()*15);
+     let planetC4 = addPlanet(90, 1600, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+     thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
+ 
 }
 
 function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
