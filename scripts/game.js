@@ -10,9 +10,17 @@ let asteroidBelt, figure;
 let firstSystem, secondSystem, thirdSystem;
 let duration = 5000;
 let currentTime = Date.now();
+let spaceships = null;	
+let paths = [];	
+let lookSpeed = 0.05;	
+let velocity = 150;	
+let spaceshipNo = 20;	
+let loopDuration = 20000;	
+let loopStart = Date.now();
 
 var xSpeed = 0.00001;
 var ySpeed = 0.00001;
+var zSpeed = 0.00001;
 
 const clock = new THREE.Clock();
 
@@ -125,6 +133,21 @@ function animate(){
     controls.update(clock.getDelta());
 
 
+    let timer = Date.now();	
+    let delta = timer - loopStart;	
+    // TODO: Solve translateZ error
+    // for (let r = 0; r < spaceshipNo; r++) {
+    //      if (delta < loopDuration) {
+    //          spaceships.children[r].translateZ(paths[r]);
+    //      } else { 
+    //          spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
+    //          //paths[r] = -paths[r];	
+    //          loopStart = Date.now();
+    //      }
+    // }
+
+
+
     // FirstSystem: Update all planets in planet array
     firstSystem.planets.forEach( planet =>
         {
@@ -203,8 +226,8 @@ function createScene(){
 
     // Create first Person Controls
     controls = new THREE.FirstPersonControls( camera, renderer.domElement );
-    controls.movementSpeed = 20;
-    controls.lookSpeed = 0.05;
+    controls.movementSpeed = velocity;
+    controls.lookSpeed = lookSpeed;
 
     // Start scene background with black
     scene.background = new THREE.Color( 0, 0, 0 );
@@ -279,6 +302,24 @@ function createScene(){
         "terrestrial/Terrestrial3.png",
         "terrestrial/Terrestrial4.png"
     ]
+
+    //Load and generate the spaceship at a random point in space	
+    spaceships = new THREE.Object3D;	
+    let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.4 };	
+    let lowerLimit = [40, 40, 40];	
+    let upperLimit = [200, 200, 200];	
+
+    spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);	
+
+    for (let i = 0; i < spaceshipNo; i++) {	
+        let z = Math.random();	
+
+        paths.push(z);	
+    }	
+
+    //genSpaceship(objModelUrl, spaceships, 60, 60, 40);
+    scene.add(spaceships);
+
     let random_texture_index = 0;
     // First System
     firstSystem = new System();
@@ -358,6 +399,36 @@ function createScene(){
  
 }
 
+/**
+ * Creates x amount of spaceship objects at the specified x,y,z coordinates	
+ * @param objModelUrl: an object with the .obj url and the .jpg/.png texture
+ * @param number amount of spaceships to generate
+ * @param lowerLimit array of size 3 that contains the x,y,z coordinates (in that order) of the lower limit
+ * @param upperLimit array of size 3 that contains the x,y,z coordinates (in that order) of the upper limit
+ * 
+**/
+function spaceshipMultigen(objModelUrl, number, lowerLimit, upperLimit) {
+    var x, y, z;
+    for (let index = 0; index < number; index++) {
+        x = Math.floor(Math.random() * (upperLimit[0] - lowerLimit[0]) + lowerLimit[0]);
+        y = Math.floor(Math.random() * (upperLimit[1] - lowerLimit[1]) + lowerLimit[1]);
+        z = Math.floor(Math.random() * (upperLimit[2] - lowerLimit[2]) + lowerLimit[2]);
+
+        genSpaceship(objModelUrl, spaceships, x, y, z);
+    }	        
+}	
+
+
+/**	   
+ * Creates a spaceship object at the specified x,y,z coordinates
+ * @param objModelUrl: an object with the .obj url and the .jpg/.png texture
+ * @param objectList: the master object that will contain the spaceship 
+ *
+**/
+function genSpaceship(objModelUrl, objectList, x, y, z) {
+    loadObj(objModelUrl, objectList, x, y, z);
+}
+
 function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
 {
     // Load texture map
@@ -385,4 +456,65 @@ function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
     return figure;
 
 }
+
+function promisifyLoader(loader, onProgress) {	
+    function promiseLoader(url) {	
+
+        return new Promise((resolve, reject) => {	
+
+            loader.load(url, resolve, onProgress, reject);	
+
+        });	
+    }	
+
+    return {	
+        originalLoader: loader,	
+        load: promiseLoader,	
+    };	
+}	
+const onError = ((err) => { console.error(err); });	
+
+async function loadObj(objModelUrl, objectList, x, y, z) {	
+    const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());	
+
+    try {	
+        const object = await objPromiseLoader.load(objModelUrl.obj);	
+
+        let texture = objModelUrl.hasOwnProperty('map') ? new THREE.TextureLoader().load(objModelUrl.map) : null;	
+        let normalMap = objModelUrl.hasOwnProperty('normalMap') ? new THREE.TextureLoader().load(objModelUrl.normalMap) : null;	
+        let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;	
+        let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;	
+
+
+        object.traverse(function (child) {	
+            if (child instanceof THREE.Mesh) {	
+                child.castShadow = true;	
+                child.receiveShadow = true;	
+                child.material.map = texture;	
+                child.material.normalMap = normalMap;	
+                child.material.specularMap = specularMap;	
+            }	
+        });	
+
+        object.scale.set(scale, scale, scale);	
+        object.position.z = z;	
+        object.position.x = x;	
+        object.position.y = y;	
+        object.rotation.y = 2 * Math.PI;	
+        object.name = "Spaceship";	
+
+        let PivotPoint = new THREE.Object3D;	
+
+        PivotPoint.add(object);	
+        PivotPoint.position.z = z;	
+        PivotPoint.position.x = x;	
+        PivotPoint.position.y = y;	
+        PivotPoint.rotation.y = Math.floor(Math.random() * 360);	
+        objectList.add(PivotPoint);	
+
+    }	
+    catch (err) {	
+        return onError(err);	
+    }	
+}	
 
