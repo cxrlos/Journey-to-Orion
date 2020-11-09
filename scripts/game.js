@@ -1,6 +1,6 @@
 /*
 Carla Pérez Gavilán Del Castillo, A01023033
-Juan Francisco Gortarez, A0102
+Juan Francisco Gortarez, A01021926
 Carlos García,
 */
 
@@ -10,9 +10,18 @@ let asteroidBelt, figure;
 let firstSystem, secondSystem, thirdSystem;
 let duration = 5000;
 let currentTime = Date.now();
+let spaceships = null;
+let paths = [];
+let lookSpeed = 0.05;
+let velocity = 150;
+let spaceshipNo = 20;
+let loopDuration = 20000;
+let loopStart = Date.now();
+
 
 var xSpeed = 0.00001;
 var ySpeed = 0.00001;
+var zSpeed = 0.00001;
 
 const clock = new THREE.Clock();
 
@@ -27,9 +36,8 @@ function onDocumentKeyDown(event) {
         camera.position.x -= xSpeed;
     } else if (keyCode == 68) {
         camera.position.x += xSpeed;
-    } else if (keyCode == 32) {
-        camera.position.set(0, 0, 0);
     }
+
 };
 
 /**
@@ -56,10 +64,9 @@ class System {
  * @param moon_speed: speed of rotation of moons around planet
  * @param radius: planet's radius
  */
-class Planet
-{
-    constructor(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y)
-    {
+
+class Planet {
+    constructor(object, moons, axis_speed, sun_speed, moon_speed, radius) {
 
         // Create an empty object of type all and
         this.all = new THREE.Object3D();
@@ -94,14 +101,13 @@ class Planet
         this.sun_speed = sun_speed;
         this.moon_speed = moon_speed;
 
-        // Create number of moons per planet in random positions around planet
-        for(var i=0; i<moons; i++)
-        {
+        // Create number of moons per planet in random positions around planet 
+        for (var i = 0; i < moons; i++) {
             // Generate random angle from 0-2*PI
-            let maxA = Math.PI*2;
+            let maxA = Math.PI * 2;
             let minA = 0;
-            let ran_x = (radius+10)*Math.cos((Math.random()*(maxA-minA))+minA);
-            let ran_y = (radius+10)*Math.sin((Math.random()*(maxA-minA))+minA);
+            let ran_x = (radius + 10) * Math.cos((Math.random() * (maxA - minA)) + minA);
+            let ran_y = (radius + 10) * Math.sin((Math.random() * (maxA - minA)) + minA);
 
             // Use function to add planet in random position with texture
             let m = addPlanet(2, ran_x, ran_y, "../../images/system/moon.jpg", 0, 1, "../../images/moon_bump.jpg");
@@ -123,63 +129,59 @@ class Planet
 function animate(){
     // Update scene controls
     controls.update(clock.getDelta());
+  
+  let timer = Date.now();
+    let delta = timer - loopStart;
+    for (let r = 0; r < spaceshipNo; r++) {
 
-
+        if (delta < loopDuration) {
+            spaceships.children[r].translateZ(paths[r]);
+        }
+        else {
+            spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
+            //paths[r] = -paths[r];
+            loopStart = Date.now();
+        }
+  
     // FirstSystem: Update all planets in planet array
-    firstSystem.planets.forEach( planet =>
-        {
+    firstSystem.planets.forEach( planet =>{
             // Update rotation of planet on its own speed (axis rotation)
             planet.object.rotation.z += planet.axis_speed;
-
-
             // Update rotation of moons around planet (moon rotation)
             planet.privotCenter.rotation.z += planet.moon_speed;
-
             // Update rotation of planet around sun (orbital rotation)
             planet.pivotSun.rotation.z += planet.sun_speed;
-
         });
 
-
     // SecondSystem: Update all planets in planet array
-    secondSystem.planets.forEach( planet =>
-        {
+    secondSystem.planets.forEach( planet =>{
             // Update rotation of planet on its own speed (axis rotation)
             planet.object.rotation.z += planet.axis_speed;
-
-
             // Update rotation of moons around planet (moon rotation)
             planet.privotCenter.rotation.z += planet.moon_speed;
-
             // Update rotation of planet around sun (orbital rotation)
             planet.pivotSun.rotation.z += planet.sun_speed;
-
         });
 
         // ThirdSystem: Update all planets in planet array
-        thirdSystem.planets.forEach( planet =>
-        {
+        thirdSystem.planets.forEach( planet =>{
             // Update rotation of planet on its own speed (axis rotation)
             planet.object.rotation.z += planet.axis_speed;
-
-
             // Update rotation of moons around planet (moon rotation)
             planet.privotCenter.rotation.z += planet.moon_speed;
-
             // Update rotation of planet around sun (orbital rotation)
             planet.pivotSun.rotation.z += planet.sun_speed;
-
         });
 }
 
 /**
  * RUN: it renders scene and camera, calls animate
  */
-function run(){
-    requestAnimationFrame(function() { run(); });
+function run() {
+    requestAnimationFrame(function () { run(); });
 
     // Render the scene
-    renderer.render( scene, camera );
+    renderer.render(scene, camera);
 
     // Update rotations calling animate
     animate();
@@ -189,28 +191,28 @@ function run(){
  * createScene: Initializes all objects on the scene before any updates
  */
 
-function createScene(){
-    // Creation of renderer and setting size to browser window size
-    renderer = new THREE.WebGLRenderer({antialias: true });
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+function createScene() {
+    // Creation of renderer and setting size to browser window size 
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
     // Create scene object
     scene = new THREE.Scene();
 
     // Create camera with ratio of window
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth/ window.innerHeight, 1, 10000 );
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
 
-    // Create first Person Controls
-    controls = new THREE.FirstPersonControls( camera, renderer.domElement );
-    controls.movementSpeed = 20;
-    controls.lookSpeed = 0.05;
+    // Create orbit controls for Obrit Controller
+    controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+    controls.movementSpeed = velocity;
+    controls.lookSpeed = lookSpeed;
 
-    // Start scene background with black
-    scene.background = new THREE.Color( 0, 0, 0 );
+    // Start scene background with black 
+    scene.background = new THREE.Color(0, 0, 0);
 
     // Initialize camara position on top of solar system
-    camera.position.set( 0, 0, 0 );
+    camera.position.set(0, 0, 0);
     camera.position.z = 1000;
 
     controls.update(clock.getDelta());
@@ -227,14 +229,35 @@ function createScene(){
     var pointLight = new THREE.PointLight(pointColor);
 
     // Set sun's point light to center
-    pointLight.position.set(0,0,0);
+    pointLight.position.set(0, 0, 0);
     pointLight.intensity = 2.0;
 
     // Making sure pointLight casts shadow
     pointLight.castShadow = true;
 
+    //Load and generate the spaceship at a random point in space
+    spaceships = new THREE.Object3D;
+    let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.4 };
+    let lowerLimit = [40, 40, 40];
+    let upperLimit = [200, 200, 200];
+
+    spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);
+
+    for (let i = 0; i < spaceshipNo; i++) {
+        let z = Math.random();
+
+        paths.push(z);
+    }
+
+
+    //genSpaceship(objModelUrl, spaceships, 60, 60, 40);
+
     //Adding pointlight to sceen 
-    scene.add(pointLight); 
+    scene.add(pointLight);
+
+    scene.add(spaceships);
+
+
 
     {
     const loader = new THREE.CubeTextureLoader();
@@ -358,31 +381,124 @@ function createScene(){
  
 }
 
-function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
-{
+
+/**
+ * Creates x amount of spaceship objects at the specified x,y,z coordinates
+ * @param objModelUrl: an object with the .obj url and the .jpg/.png texture
+ * @param number amount of spaceships to generate
+ * @param lowerLimit array of size 3 that contains the x,y,z coordinates (in that order) of the lower limit 
+ * @param upperLimit array of size 3 that contains the x,y,z coordinates (in that order) of the upper limit 
+ * 
+**/
+function spaceshipMultigen(objModelUrl, number, lowerLimit, upperLimit) {
+    var x, y, z;
+    for (let index = 0; index < number; index++) {
+        x = Math.floor(Math.random() * (upperLimit[0] - lowerLimit[0]) + lowerLimit[0]);
+        y = Math.floor(Math.random() * (upperLimit[1] - lowerLimit[1]) + lowerLimit[1]);
+        z = Math.floor(Math.random() * (upperLimit[2] - lowerLimit[2]) + lowerLimit[2]);
+
+        genSpaceship(objModelUrl, spaceships, x, y, z);
+    }
+
+
+}
+
+
+/**
+ * Creates a spaceship object at the specified x,y,z coordinates
+ * @param objModelUrl: an object with the .obj url and the .jpg/.png texture
+ * @param objectList: the master object that will contain the spaceship 
+ * 
+**/
+function genSpaceship(objModelUrl, objectList, x, y, z) {
+    loadObj(objModelUrl, objectList, x, y, z);
+}
+
+function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
     // Load texture map
     textureMap = new THREE.TextureLoader().load(mapUrl);
 
-    if(mat == 0){
-        if(haveBump == 1){
+    if (mat == 0) {
+        if (haveBump == 1) {
             bumpMap = new THREE.TextureLoader().load(bumpMap);
             material = new THREE.MeshPhongMaterial({ map: textureMap, bumpMap: bumpMap, bumpScale: 0.06 });
-        }else{
-            material = new THREE.MeshPhongMaterial({ map: textureMap});
+        } else {
+            material = new THREE.MeshPhongMaterial({ map: textureMap });
 
         }
     }
     else {
-        material = new THREE.MeshBasicMaterial({ map: textureMap});
+        material = new THREE.MeshBasicMaterial({ map: textureMap });
     }
 
     // Create planet with geometry and material
     let geometry = new THREE.SphereGeometry(radius, 32, 32);
-    let figure = new THREE.Mesh( geometry, material );
+    let figure = new THREE.Mesh(geometry, material);
 
     // Initialize Position
     figure.position.set(x, y, 0);
     return figure;
 
+}
+
+function promisifyLoader(loader, onProgress) {
+    function promiseLoader(url) {
+
+        return new Promise((resolve, reject) => {
+
+            loader.load(url, resolve, onProgress, reject);
+
+        });
+    }
+
+    return {
+        originalLoader: loader,
+        load: promiseLoader,
+    };
+}
+const onError = ((err) => { console.error(err); });
+
+async function loadObj(objModelUrl, objectList, x, y, z) {
+    const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());
+
+    try {
+        const object = await objPromiseLoader.load(objModelUrl.obj);
+
+        let texture = objModelUrl.hasOwnProperty('map') ? new THREE.TextureLoader().load(objModelUrl.map) : null;
+        let normalMap = objModelUrl.hasOwnProperty('normalMap') ? new THREE.TextureLoader().load(objModelUrl.normalMap) : null;
+        let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;
+        let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;
+
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                child.material.map = texture;
+                child.material.normalMap = normalMap;
+                child.material.specularMap = specularMap;
+            }
+        });
+
+        object.scale.set(scale, scale, scale);
+        object.position.z = z;
+        object.position.x = x;
+        object.position.y = y;
+        object.rotation.y = 2 * Math.PI;
+        object.name = "Spaceship";
+
+        let PivotPoint = new THREE.Object3D;
+
+        PivotPoint.add(object);
+        PivotPoint.position.z = z;
+        PivotPoint.position.x = x;
+        PivotPoint.position.y = y;
+        PivotPoint.rotation.y = Math.floor(Math.random() * 360);
+        objectList.add(PivotPoint);
+
+    }
+    catch (err) {
+        return onError(err);
+    }
 }
 
