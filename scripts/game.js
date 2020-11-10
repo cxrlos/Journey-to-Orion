@@ -135,16 +135,18 @@ function animate(){
 
     let timer = Date.now();	
     let delta = timer - loopStart;	
-    // TODO: Solve translateZ error
-    // for (let r = 0; r < spaceshipNo; r++) {
-    //      if (delta < loopDuration) {
-    //          spaceships.children[r].translateZ(paths[r]);
-    //      } else { 
-    //          spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
-    //          //paths[r] = -paths[r];	
-    //          loopStart = Date.now();
-    //      }
-    // }
+    
+    for (let r = 0; r < spaceshipNo; r++) {
+        if(spaceships.children[r] != undefined){
+            if (delta < loopDuration) {
+                spaceships.children[r].translateZ(paths[r]);
+            } else { 
+                spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
+                //paths[r] = -paths[r];	
+                loopStart = Date.now();
+                }
+        }
+    }
 
 
 
@@ -306,8 +308,8 @@ function createScene(){
     //Load and generate the spaceship at a random point in space	
     spaceships = new THREE.Object3D;	
     let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.4 };	
-    let lowerLimit = [40, 40, 40];	
-    let upperLimit = [200, 200, 200];	
+    let lowerLimit = [0, 0, 0];	
+    let upperLimit = [2000, 2000, 2000];	
 
     spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);	
 
