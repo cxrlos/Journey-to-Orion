@@ -1,8 +1,13 @@
-/*
-Carla Pérez Gavilán Del Castillo, A01023033
-Juan Francisco Gortarez, A0102
-Carlos García,
-*/
+/*------------------------------------------------------- game.js ---------
+    |
+    |   Purpose: THREEJS program that emulates a solar system.
+    |
+    |   Developer:  
+    |       Carla Perez - https://github.com/CarlaPerezGavilan
+    |       Carlos Garcia - https://github.com/cxrlos
+    |       Juan Francisco Gortarez - https://github.com/Starfleet-Command
+    |
+    *--------------------------------------------------------------------*/
 
 // Declaration of all global variables
 let renderer = null,  scene = null, camera = null;
@@ -64,11 +69,8 @@ class System {
  * @param moon_speed: speed of rotation of moons around planet
  * @param radius: planet's radius
  */
-class Planet
-{
-    constructor(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y)
-    {
-
+class Planet {
+    constructor(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
         // Create an empty object of type all and
         this.all = new THREE.Object3D();
         this.all.add(object);
@@ -103,13 +105,12 @@ class Planet
         this.moon_speed = moon_speed;
 
         // Create number of moons per planet in random positions around planet
-        for(var i=0; i<moons; i++)
-        {
+        for(var i = 0; i < moons; i++) {
             // Generate random angle from 0-2*PI
-            let maxA = Math.PI*2;
+            let maxA = Math.PI * 2;
             let minA = 0;
-            let ran_x = (radius+10)*Math.cos((Math.random()*(maxA-minA))+minA);
-            let ran_y = (radius+10)*Math.sin((Math.random()*(maxA-minA))+minA);
+            let ran_x = (radius + 10) * Math.cos((Math.random() * (maxA - minA)) + minA);
+            let ran_y = (radius + 10) * Math.sin((Math.random() * (maxA - minA)) + minA);
 
             // Use function to add planet in random position with texture
             let m = addPlanet(2, ran_x, ran_y, "../../images/system/moon.jpg", 0, 1, "../../images/moon_bump.jpg");
@@ -128,10 +129,9 @@ class Planet
  * ANIMATE: Updates scene every delta time
  */
 
-function animate(){
+function animate() {
     // Update scene controls
     controls.update(clock.getDelta());
-
 
     let timer = Date.now();	
     let delta = timer - loopStart;	
@@ -144,56 +144,39 @@ function animate(){
                 spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
                 //paths[r] = -paths[r];	
                 loopStart = Date.now();
-                }
+            }
         }
     }
 
-
-
     // FirstSystem: Update all planets in planet array
-    firstSystem.planets.forEach( planet =>
-        {
+    firstSystem.planets.forEach( planet => {
             // Update rotation of planet on its own speed (axis rotation)
             planet.object.rotation.z += planet.axis_speed;
-
-
             // Update rotation of moons around planet (moon rotation)
             planet.privotCenter.rotation.z += planet.moon_speed;
-
             // Update rotation of planet around sun (orbital rotation)
             planet.pivotSun.rotation.z += planet.sun_speed;
 
         });
 
-
     // SecondSystem: Update all planets in planet array
-    secondSystem.planets.forEach( planet =>
-        {
+    secondSystem.planets.forEach( planet => {
             // Update rotation of planet on its own speed (axis rotation)
             planet.object.rotation.z += planet.axis_speed;
-
-
             // Update rotation of moons around planet (moon rotation)
             planet.privotCenter.rotation.z += planet.moon_speed;
-
             // Update rotation of planet around sun (orbital rotation)
             planet.pivotSun.rotation.z += planet.sun_speed;
-
         });
 
         // ThirdSystem: Update all planets in planet array
-        thirdSystem.planets.forEach( planet =>
-        {
+        thirdSystem.planets.forEach( planet => {
             // Update rotation of planet on its own speed (axis rotation)
             planet.object.rotation.z += planet.axis_speed;
-
-
             // Update rotation of moons around planet (moon rotation)
             planet.privotCenter.rotation.z += planet.moon_speed;
-
             // Update rotation of planet around sun (orbital rotation)
             planet.pivotSun.rotation.z += planet.sun_speed;
-
         });
 }
 
@@ -202,10 +185,8 @@ function animate(){
  */
 function run(){
     requestAnimationFrame(function() { run(); });
-
     // Render the scene
     renderer.render( scene, camera );
-
     // Update rotations calling animate
     animate();
 }
@@ -274,12 +255,12 @@ function createScene(){
     scene.background = texture;
   }
 
-    let plane_geometry = new THREE.PlaneGeometry( 35, 20, 32 );
+    let plane_geometry = new THREE.PlaneGeometry(35, 20, 32);
     textureMap = new THREE.TextureLoader().load("../textures/cockpit/dashboard.png");
     let plane_material = new THREE.MeshBasicMaterial( {map: textureMap, transparent:true, side: THREE.DoubleSide} );
     let plane = new THREE.Mesh( plane_geometry, plane_material );
-    plane.position.set(0,0,-20);
-    plane.rotation.set(0,0,0);
+    plane.position.set(0, 0, -20);
+    plane.rotation.set(0, 0, 0);
     camera.add( plane );
 
     // Creating the sun 
@@ -431,8 +412,7 @@ function genSpaceship(objModelUrl, objectList, x, y, z) {
     loadObj(objModelUrl, objectList, x, y, z);
 }
 
-function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
-{
+function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
     // Load texture map
     textureMap = new THREE.TextureLoader().load(mapUrl);
 
@@ -442,7 +422,6 @@ function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
             material = new THREE.MeshPhongMaterial({ map: textureMap, bumpMap: bumpMap, bumpScale: 0.06 });
         }else{
             material = new THREE.MeshPhongMaterial({ map: textureMap});
-
         }
     }
     else {
@@ -456,16 +435,12 @@ function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
     // Initialize Position
     figure.position.set(x, y, 0);
     return figure;
-
 }
 
 function promisifyLoader(loader, onProgress) {	
     function promiseLoader(url) {	
-
         return new Promise((resolve, reject) => {	
-
             loader.load(url, resolve, onProgress, reject);	
-
         });	
     }	
 
@@ -474,11 +449,11 @@ function promisifyLoader(loader, onProgress) {
         load: promiseLoader,	
     };	
 }	
+
 const onError = ((err) => { console.error(err); });	
 
 async function loadObj(objModelUrl, objectList, x, y, z) {	
     const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());	
-
     try {	
         const object = await objPromiseLoader.load(objModelUrl.obj);	
 
@@ -486,7 +461,6 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         let normalMap = objModelUrl.hasOwnProperty('normalMap') ? new THREE.TextureLoader().load(objModelUrl.normalMap) : null;	
         let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;	
         let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;	
-
 
         object.traverse(function (child) {	
             if (child instanceof THREE.Mesh) {	
@@ -513,7 +487,6 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         PivotPoint.position.y = y;	
         PivotPoint.rotation.y = Math.floor(Math.random() * 360);	
         objectList.add(PivotPoint);	
-
     }	
     catch (err) {	
         return onError(err);	
