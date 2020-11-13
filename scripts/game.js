@@ -13,6 +13,7 @@
 let renderer = null,  scene = null, camera = null;
 let asteroidBelt, figure;
 let firstSystem, secondSystem, thirdSystem;
+let firstAsteroids, secondAsteroids, thirdAsteroids;
 let duration = 5000;
 let currentTime = Date.now();
 let spaceships = null;	
@@ -130,6 +131,7 @@ class Planet {
  */
 
 function animate() {
+    console.log("current pos "+camera.position.x+", "+camera.position.y);
     // Update scene controls
     controls.update(clock.getDelta());
 
@@ -379,8 +381,44 @@ function createScene(){
      random_texture_index = Math.round(Math.random()*15);
      let planetC4 = addPlanet(90, 1600, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
      thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
- 
+
+     firstAsteroids = new THREE.Object3D;	
+     secondAsteroids = new THREE.Object3D;	
+     thirdAsteroids = new THREE.Object3D;	
+     
+     generateRandom(1000, -1000);
+
+     scene.add(firstAsteroids);
+     scene.add(secondAsteroids);
+     scene.add(thirdAsteroids);
+
+
 }
+     
+function generateRandom(max_pos, min_pos){
+    setInterval(function() {
+        let rand_x = Math.random()* (max_pos - min_pos) + min_pos;
+        let rand_y = Math.random()* (max_pos - min_pos) + min_pos;
+        let random_system = Math.round(Math.random()*2);
+        let objModelUrl = { obj: '../models/asteroids/A2.obj', map: '../models/asteroids/Textures/Normal.jpg', scale: 0.4 };	
+
+        if(random_system == 0){
+            loadObj(objModelUrl, firstAsteroids, rand_x, rand_y, 0);
+            console.log("added asteroid  1 y: "+rand_y+" x: "+rand_x);
+        }
+
+        if(random_system == 1){
+            loadObj(objModelUrl, secondAsteroids, rand_x, rand_y, 0);
+            console.log("added asteroid  2 y: "+rand_y+" x: "+rand_x);
+        }
+        if(random_system == 2){
+            loadObj(objModelUrl, thirdAsteroids, 200, 200, 0);
+            console.log("added asteroid  3 y: "+rand_y+" x: "+rand_x);
+
+        }
+      }, 5000);
+}
+
 
 /**
  * Creates x amount of spaceship objects at the specified x,y,z coordinates	
