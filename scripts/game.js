@@ -10,24 +10,35 @@
     *--------------------------------------------------------------------*/
 
 // Declaration of all global variables
-let renderer = null,  scene = null, camera = null;
+let renderer = null, scene = null, camera = null;
 let asteroidBelt, figure;
 let firstSystem, secondSystem, thirdSystem;
 let duration = 5000;
 let currentTime = Date.now();
-let spaceships = null;	
-let paths = [];	
-let lookSpeed = 0.05;	
-let velocity = 150;	
-let spaceshipNo = 20;	
-let loopDuration = 20000;	
+let spaceships = null;
+let paths = [];
+let lookSpeed = 0.05;
+let velocity = 150;
+let spaceshipNo = 20;
+let loopDuration = 20000;
 let loopStart = Date.now();
+let mouse = new THREE.Vector2();
+let sensorImage = null;
+let overlayText = null;
 
-var xSpeed = 0.00001;
-var ySpeed = 0.00001;
-var zSpeed = 0.00001;
+
+var xSpeed = 0.001;
+var ySpeed = 0.001;
+var zSpeed = 0.001;
 
 const clock = new THREE.Clock();
+const raycaster = new THREE.Raycaster();
+raycaster.near = 30;
+raycaster.far = 2000;
+
+
+
+
 
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
@@ -44,6 +55,17 @@ function onDocumentKeyDown(event) {
         camera.position.set(0, 0, 0);
     }
 };
+
+document.addEventListener("mousemove", onMouseMove, false);
+function onMouseMove(event) {
+
+    // calculate mouse position in normalized device coordinates
+    // (-1 to +1) for both components
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+}
 
 /**
  * System is a class that contains all planets, it is created at the begining so that
@@ -105,7 +127,7 @@ class Planet {
         this.moon_speed = moon_speed;
 
         // Create number of moons per planet in random positions around planet
-        for(var i = 0; i < moons; i++) {
+        for (var i = 0; i < moons; i++) {
             // Generate random angle from 0-2*PI
             let maxA = Math.PI * 2;
             let minA = 0;
@@ -133,14 +155,14 @@ function animate() {
     // Update scene controls
     controls.update(clock.getDelta());
 
-    let timer = Date.now();	
-    let delta = timer - loopStart;	
-    
+    let timer = Date.now();
+    let delta = timer - loopStart;
+
     for (let r = 0; r < spaceshipNo; r++) {
-        if(spaceships.children[r] != undefined){
+        if (typeof spaceships.children[r] !== "undefined") {
             if (delta < loopDuration) {
                 spaceships.children[r].translateZ(paths[r]);
-            } else { 
+            } else {
                 spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
                 //paths[r] = -paths[r];	
                 loopStart = Date.now();
@@ -149,44 +171,95 @@ function animate() {
     }
 
     // FirstSystem: Update all planets in planet array
-    firstSystem.planets.forEach( planet => {
-            // Update rotation of planet on its own speed (axis rotation)
-            planet.object.rotation.z += planet.axis_speed;
-            // Update rotation of moons around planet (moon rotation)
-            planet.privotCenter.rotation.z += planet.moon_speed;
-            // Update rotation of planet around sun (orbital rotation)
-            planet.pivotSun.rotation.z += planet.sun_speed;
+    firstSystem.planets.forEach(planet => {
+        // Update rotation of planet on its own speed (axis rotation)
+        planet.object.rotation.z += planet.axis_speed;
+        // Update rotation of moons around planet (moon rotation)
+        planet.privotCenter.rotation.z += planet.moon_speed;
+        // Update rotation of planet around sun (orbital rotation)
+        planet.pivotSun.rotation.z += planet.sun_speed;
 
-        });
+    });
 
     // SecondSystem: Update all planets in planet array
-    secondSystem.planets.forEach( planet => {
-            // Update rotation of planet on its own speed (axis rotation)
-            planet.object.rotation.z += planet.axis_speed;
-            // Update rotation of moons around planet (moon rotation)
-            planet.privotCenter.rotation.z += planet.moon_speed;
-            // Update rotation of planet around sun (orbital rotation)
-            planet.pivotSun.rotation.z += planet.sun_speed;
-        });
+    secondSystem.planets.forEach(planet => {
+        // Update rotation of planet on its own speed (axis rotation)
+        planet.object.rotation.z += planet.axis_speed;
+        // Update rotation of moons around planet (moon rotation)
+        planet.privotCenter.rotation.z += planet.moon_speed;
+        // Update rotation of planet around sun (orbital rotation)
+        planet.pivotSun.rotation.z += planet.sun_speed;
+    });
 
-        // ThirdSystem: Update all planets in planet array
-        thirdSystem.planets.forEach( planet => {
-            // Update rotation of planet on its own speed (axis rotation)
-            planet.object.rotation.z += planet.axis_speed;
-            // Update rotation of moons around planet (moon rotation)
-            planet.privotCenter.rotation.z += planet.moon_speed;
-            // Update rotation of planet around sun (orbital rotation)
-            planet.pivotSun.rotation.z += planet.sun_speed;
-        });
+    // ThirdSystem: Update all planets in planet array
+    thirdSystem.planets.forEach(planet => {
+        // Update rotation of planet on its own speed (axis rotation)
+        planet.object.rotation.z += planet.axis_speed;
+        // Update rotation of moons around planet (moon rotation)
+        planet.privotCenter.rotation.z += planet.moon_speed;
+        // Update rotation of planet around sun (orbital rotation)
+        planet.pivotSun.rotation.z += planet.sun_speed;
+    });
+
+    //establish origin and direction for raycaster
+    raycaster.setFromCamera(mouse, camera);
+
+    //detect which (if any) elements are in the raycaster's line of sight
+    let intersects = raycaster.intersectObjects(scene.children, true);
+
+    // if any one is found, show it. 
+    if (typeof intersects[0] !== "undefined") {
+        let figure = intersects[0].object.clone();
+
+        if (figure.geometry.type == "SphereGeometry") {
+            figure.scale.set(0.005, 0.005, 0.005);
+        }
+
+        else figure.scale.set(0.1, 0.1, 0.1);
+        figure.position.set(0, -3, -15);
+
+        //if nothing is on the sensor, add the intersected item
+        if (sensorImage == null) {
+            // camera.children.forEach(element => {
+
+
+            //     element.geometry.dispose();
+            //     element.material.dispose();
+            //     scene.remove(element);
+
+            // });
+            // renderer.renderLists.dispose();
+
+            sensorImage = figure;
+            camera.add(figure);
+
+
+        }
+        //continuously update sensor data
+        else {
+            sensorImage = figure;
+            console.log(camera.children);
+            overlayText.innerHTML = "Distance: " + Math.round(intersects[0].distance) + " km";
+        }
+
+    }
+    // else sensorImage = null;
+
+
+
+
+
 }
 
 /**
  * RUN: it renders scene and camera, calls animate
  */
-function run(){
-    requestAnimationFrame(function() { run(); });
+function run() {
+    requestAnimationFrame(function () { run(); });
+
+
     // Render the scene
-    renderer.render( scene, camera );
+    renderer.render(scene, camera);
     // Update rotations calling animate
     animate();
 }
@@ -195,28 +268,30 @@ function run(){
  * createScene: Initializes all objects on the scene before any updates
  */
 
-function createScene(){
+function createScene() {
     // Creation of renderer and setting size to browser window size
-    renderer = new THREE.WebGLRenderer({antialias: true });
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    overlayText = document.getElementById("distance");
 
     // Create scene object
     scene = new THREE.Scene();
 
     // Create camera with ratio of window
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth/ window.innerHeight, 1, 10000 );
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
 
     // Create first Person Controls
-    controls = new THREE.FirstPersonControls( camera, renderer.domElement );
+    controls = new THREE.FirstPersonControls(camera, renderer.domElement);
     controls.movementSpeed = velocity;
     controls.lookSpeed = lookSpeed;
 
     // Start scene background with black
-    scene.background = new THREE.Color( 0, 0, 0 );
+    scene.background = new THREE.Color(0, 0, 0);
 
     // Initialize camara position on top of solar system
-    camera.position.set( 0, 0, 0 );
+    camera.position.set(0, 0, 0);
     camera.position.z = 1000;
 
     controls.update(clock.getDelta());
@@ -233,35 +308,38 @@ function createScene(){
     var pointLight = new THREE.PointLight(pointColor);
 
     // Set sun's point light to center
-    pointLight.position.set(0,0,0);
+    pointLight.position.set(0, 0, 0);
     pointLight.intensity = 2.0;
 
     // Making sure pointLight casts shadow
     pointLight.castShadow = true;
 
     //Adding pointlight to sceen 
-    scene.add(pointLight); 
+    scene.add(pointLight);
+
+
 
     {
-    const loader = new THREE.CubeTextureLoader();
-    const texture = loader.load([
-      '../textures/skybox/corona_ft.png',
-      '../textures/skybox/corona_bk.png',
-      '../textures/skybox/corona_up.png',
-      '../textures/skybox/corona_dn.png',
-      '../textures/skybox/corona_rt.png',
-      '../textures/skybox/corona_lf.png',
-    ]);
-    scene.background = texture;
-  }
+        const loader = new THREE.CubeTextureLoader();
+        const texture = loader.load([
+            '../textures/skybox/corona_ft.png',
+            '../textures/skybox/corona_bk.png',
+            '../textures/skybox/corona_up.png',
+            '../textures/skybox/corona_dn.png',
+            '../textures/skybox/corona_rt.png',
+            '../textures/skybox/corona_lf.png',
+        ]);
+        scene.background = texture;
+    }
 
+    //Create spaceship interior and add it as a child of the camera.
     let plane_geometry = new THREE.PlaneGeometry(35, 20, 32);
     textureMap = new THREE.TextureLoader().load("../textures/cockpit/dashboard.png");
-    let plane_material = new THREE.MeshBasicMaterial( {map: textureMap, transparent:true, side: THREE.DoubleSide} );
-    let plane = new THREE.Mesh( plane_geometry, plane_material );
+    let plane_material = new THREE.MeshBasicMaterial({ map: textureMap, transparent: true, side: THREE.DoubleSide });
+    let plane = new THREE.Mesh(plane_geometry, plane_material);
     plane.position.set(0, 0, -20);
     plane.rotation.set(0, 0, 0);
-    camera.add( plane );
+    camera.add(plane);
 
     // Creating the sun 
     let sun = addPlanet(30, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
@@ -287,18 +365,18 @@ function createScene(){
     ]
 
     //Load and generate the spaceship at a random point in space	
-    spaceships = new THREE.Object3D;	
-    let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.4 };	
-    let lowerLimit = [0, 0, 0];	
-    let upperLimit = [2000, 2000, 2000];	
+    spaceships = new THREE.Object3D;
+    let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.4 };
+    let lowerLimit = [0, 0, 0];
+    let upperLimit = [2000, 2000, 2000];
 
-    spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);	
+    spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);
 
-    for (let i = 0; i < spaceshipNo; i++) {	
-        let z = Math.random();	
+    for (let i = 0; i < spaceshipNo; i++) {
+        let z = Math.random();
 
-        paths.push(z);	
-    }	
+        paths.push(z);
+    }
 
     //genSpaceship(objModelUrl, spaceships, 60, 60, 40);
     scene.add(spaceships);
@@ -311,23 +389,22 @@ function createScene(){
     let sun_a = addPlanet(180, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
     scene.add(sun_a);
 
-    random_texture_index = Math.round(Math.random()*15);
-    console.log(all_textures[0]);
-    console.log(random_texture_index);
+    random_texture_index = Math.round(Math.random() * 15);
 
-    let planetA1 = addPlanet(100, 60, 2.5, "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+
+    let planetA1 = addPlanet(100, 60, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA1, 0, 0.01, 0.01, 0.02, 5, sun_a.position.x, sun_a.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetA2 = addPlanet(130, 850, 3,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetA2 = addPlanet(130, 850, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA2, 0, 0.01, 0.008, 0.01, 6, sun_a.position.x, sun_a.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetA3 = addPlanet(80, 1100, 3.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetA3 = addPlanet(80, 1100, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA3, 0, 0.01, 0.009, 0.01, 7, sun_a.position.x, sun_a.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetA4 = addPlanet(110, 1800, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetA4 = addPlanet(110, 1800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA4, 0, 0.01, 0.005, 0.02, 6, sun_a.position.x, sun_a.position.y);
 
     //  Second System
@@ -337,49 +414,51 @@ function createScene(){
     let sun_b = addPlanet(200, 1000, 5000, "../models/planets/inhospitable/Venusian.png", 1, 0, "");
     scene.add(sun_b);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB1 = addPlanet(120, 400, 2.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB1 = addPlanet(120, 400, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB1, 0, 0.01, 0.01, 0.02, 5, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB2 = addPlanet(90, 800, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB2 = addPlanet(90, 800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB2, 0, 0.01, 0.008, 0.01, 6, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB3 = addPlanet(80, 1200, 3.5,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB3 = addPlanet(80, 1200, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB3, 0, 0.01, 0.009, 0.01, 7, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB4 = addPlanet(150, 1600, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB4 = addPlanet(150, 1600, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB4, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB5 = addPlanet(95, 2400, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB5 = addPlanet(95, 2400, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB5, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
 
-     //  Second System
-     thirdSystem = new System();
+    //  Second System
+    thirdSystem = new System();
 
-     // Seocnd System Sun  addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
-     let sun_c = addPlanet(400, -7000, -3000, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
-     scene.add(sun_c);
- 
-     random_texture_index = Math.round(Math.random()*15);
-     let planetC1 = addPlanet(150, 1000, 2.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
-     thirdSystem.newPlanet(planetC1, 0, 0.01, 0.01, 0.02, 5, sun_c.position.x, sun_c.position.y);
- 
-     random_texture_index = Math.round(Math.random()*15);
-     let planetC2 = addPlanet(400, 1200, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
-     thirdSystem.newPlanet(planetC2, 0, 0.01, 0.008, 0.01, 6, sun_c.position.x, sun_c.position.y);
- 
-     random_texture_index = Math.round(Math.random()*15);
-     let planetC3 = addPlanet(120, 1400, 3.5,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
-     thirdSystem.newPlanet(planetC3, 0, 0.01, 0.009, 0.01, 7, sun_c.position.x, sun_c.position.y);
- 
-     random_texture_index = Math.round(Math.random()*15);
-     let planetC4 = addPlanet(90, 1600, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
-     thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
- 
+    // Second System Sun  addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
+    let sun_c = addPlanet(400, -7000, -3000, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
+    scene.add(sun_c);
+
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetC1 = addPlanet(150, 1000, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    thirdSystem.newPlanet(planetC1, 0, 0.01, 0.01, 0.02, 5, sun_c.position.x, sun_c.position.y);
+
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetC2 = addPlanet(400, 1200, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    thirdSystem.newPlanet(planetC2, 0, 0.01, 0.008, 0.01, 6, sun_c.position.x, sun_c.position.y);
+
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetC3 = addPlanet(120, 1400, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    thirdSystem.newPlanet(planetC3, 0, 0.01, 0.009, 0.01, 7, sun_c.position.x, sun_c.position.y);
+
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetC4 = addPlanet(90, 1600, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
+
+
+
 }
 
 /**
@@ -398,8 +477,8 @@ function spaceshipMultigen(objModelUrl, number, lowerLimit, upperLimit) {
         z = Math.floor(Math.random() * (upperLimit[2] - lowerLimit[2]) + lowerLimit[2]);
 
         genSpaceship(objModelUrl, spaceships, x, y, z);
-    }	        
-}	
+    }
+}
 
 
 /**	   
@@ -416,80 +495,80 @@ function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
     // Load texture map
     textureMap = new THREE.TextureLoader().load(mapUrl);
 
-    if(mat == 0){
-        if(haveBump == 1){
+    if (mat == 0) {
+        if (haveBump == 1) {
             bumpMap = new THREE.TextureLoader().load(bumpMap);
             material = new THREE.MeshPhongMaterial({ map: textureMap, bumpMap: bumpMap, bumpScale: 0.06 });
-        }else{
-            material = new THREE.MeshPhongMaterial({ map: textureMap});
+        } else {
+            material = new THREE.MeshPhongMaterial({ map: textureMap });
         }
     }
     else {
-        material = new THREE.MeshBasicMaterial({ map: textureMap});
+        material = new THREE.MeshBasicMaterial({ map: textureMap });
     }
 
     // Create planet with geometry and material
     let geometry = new THREE.SphereGeometry(radius, 32, 32);
-    let figure = new THREE.Mesh( geometry, material );
+    let figure = new THREE.Mesh(geometry, material);
 
     // Initialize Position
     figure.position.set(x, y, 0);
     return figure;
 }
 
-function promisifyLoader(loader, onProgress) {	
-    function promiseLoader(url) {	
-        return new Promise((resolve, reject) => {	
-            loader.load(url, resolve, onProgress, reject);	
-        });	
-    }	
+function promisifyLoader(loader, onProgress) {
+    function promiseLoader(url) {
+        return new Promise((resolve, reject) => {
+            loader.load(url, resolve, onProgress, reject);
+        });
+    }
 
-    return {	
-        originalLoader: loader,	
-        load: promiseLoader,	
-    };	
-}	
+    return {
+        originalLoader: loader,
+        load: promiseLoader,
+    };
+}
 
-const onError = ((err) => { console.error(err); });	
+const onError = ((err) => { console.error(err); });
 
-async function loadObj(objModelUrl, objectList, x, y, z) {	
-    const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());	
-    try {	
-        const object = await objPromiseLoader.load(objModelUrl.obj);	
+async function loadObj(objModelUrl, objectList, x, y, z) {
+    const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());
+    try {
+        const object = await objPromiseLoader.load(objModelUrl.obj);
 
-        let texture = objModelUrl.hasOwnProperty('map') ? new THREE.TextureLoader().load(objModelUrl.map) : null;	
-        let normalMap = objModelUrl.hasOwnProperty('normalMap') ? new THREE.TextureLoader().load(objModelUrl.normalMap) : null;	
-        let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;	
-        let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;	
+        let texture = objModelUrl.hasOwnProperty('map') ? new THREE.TextureLoader().load(objModelUrl.map) : null;
+        let normalMap = objModelUrl.hasOwnProperty('normalMap') ? new THREE.TextureLoader().load(objModelUrl.normalMap) : null;
+        let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;
+        let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;
 
-        object.traverse(function (child) {	
-            if (child instanceof THREE.Mesh) {	
-                child.castShadow = true;	
-                child.receiveShadow = true;	
-                child.material.map = texture;	
-                child.material.normalMap = normalMap;	
-                child.material.specularMap = specularMap;	
-            }	
-        });	
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                child.material.map = texture;
+                child.material.normalMap = normalMap;
+                child.material.specularMap = specularMap;
+            }
+        });
 
-        object.scale.set(scale, scale, scale);	
-        object.position.z = z;	
-        object.position.x = x;	
-        object.position.y = y;	
-        object.rotation.y = 2 * Math.PI;	
-        object.name = "Spaceship";	
+        object.scale.set(scale, scale, scale);
+        object.position.z = z;
+        object.position.x = x;
+        object.position.y = y;
+        object.rotation.y = 2 * Math.PI;
+        object.name = "Spaceship";
 
-        let PivotPoint = new THREE.Object3D;	
+        let PivotPoint = new THREE.Object3D;
 
-        PivotPoint.add(object);	
-        PivotPoint.position.z = z;	
-        PivotPoint.position.x = x;	
-        PivotPoint.position.y = y;	
-        PivotPoint.rotation.y = Math.floor(Math.random() * 360);	
-        objectList.add(PivotPoint);	
-    }	
-    catch (err) {	
-        return onError(err);	
-    }	
-}	
+        PivotPoint.add(object);
+        PivotPoint.position.z = z;
+        PivotPoint.position.x = x;
+        PivotPoint.position.y = y;
+        PivotPoint.rotation.y = Math.floor(Math.random() * 360);
+        objectList.add(PivotPoint);
+    }
+    catch (err) {
+        return onError(err);
+    }
+}
 
