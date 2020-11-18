@@ -33,6 +33,7 @@ var zSpeed = 0.001;
 
 const clock = new THREE.Clock();
 const raycaster = new THREE.Raycaster();
+const collideEvent = new Event('collision');
 raycaster.near = 30;
 raycaster.far = 2000;
 
@@ -64,6 +65,33 @@ function onMouseMove(event) {
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+}
+
+document.addEventListener('collision', onCollision, false);
+
+function onCollision(event) {
+    resetCamera();
+}
+
+function resetCamera() {
+    locations = []
+    let loc1 = new THREE.Vector3(0, 0, 1000);
+    locations.push(loc1);
+    loc1 = new THREE.Vector3(1000, 5000, 1000);
+    locations.push(loc1);
+    loc1 = new THREE.Vector3(-7000, -3000, 1000);
+    locations.push(loc1);
+    loc1 = new THREE.Vector3(-6500, -2000, 800);
+    locations.push(loc1);
+    loc1 = new THREE.Vector3(1500, 4300, 700);
+    locations.push(loc1);
+    loc1 = new THREE.Vector3(0, 600, 1000);
+    locations.push(loc1);
+
+    selecter = Math.floor(Math.random() * 6);
+    camera.position.copy(locations[selecter]);
+
 
 }
 
@@ -237,9 +265,13 @@ function animate() {
         }
         //continuously update sensor data
         else {
-            sensorImage = figure;
-            console.log(camera.children);
+            sensorImage.copy(figure);
             overlayText.innerHTML = "Distance: " + Math.round(intersects[0].distance) + " km";
+
+            //Collision placeholder
+            if (Math.round(intersects[0].distance) < 40) {
+                document.dispatchEvent(collideEvent);
+            }
         }
 
     }
@@ -291,8 +323,8 @@ function createScene() {
     scene.background = new THREE.Color(0, 0, 0);
 
     // Initialize camara position on top of solar system
-    camera.position.set(0, 0, 0);
-    camera.position.z = 1000;
+    camera.position.set(0, 0, 1000);
+    // resetCamera();
 
     controls.update(clock.getDelta());
 
