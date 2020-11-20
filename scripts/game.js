@@ -25,6 +25,7 @@ let loopStart = Date.now();
 let mouse = new THREE.Vector2();
 let sensorImage = null;
 let overlayText = null;
+let timeText = null;
 
 
 var xSpeed = 0.001;
@@ -72,6 +73,8 @@ document.addEventListener('collision', onCollision, false);
 
 function onCollision(event) {
     resetCamera();
+    clock.stop();
+    clock.start();
 }
 
 function resetCamera() {
@@ -276,6 +279,11 @@ function animate() {
 
     }
     // else sensorImage = null;
+    let minutes = Math.floor(Math.round(clock.elapsedTime) / 60);
+
+
+
+    timeText.innerHTML = "Time: " + minutes + "m " + (Math.round(clock.elapsedTime) - (minutes * 60)) + "s";
 
 
 
@@ -307,6 +315,7 @@ function createScene() {
     document.body.appendChild(renderer.domElement);
 
     overlayText = document.getElementById("distance");
+    timeText = document.getElementById("chrono");
 
     // Create scene object
     scene = new THREE.Scene();
