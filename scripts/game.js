@@ -21,7 +21,9 @@ let paths = [];
 let lookSpeed = 0.05;	
 let velocity = 150;	
 let spaceshipNo = 20;	
-let loopDuration = 20000;	
+let loopDuration = 20000;
+let last_position = 0, current_position = 0;	
+let line, pivot_line;
 let loopStart = Date.now();
 
 var xSpeed = 0.00001;
@@ -131,7 +133,6 @@ class Planet {
  */
 
 function animate() {
-    console.log("current pos "+camera.position.x+", "+camera.position.y);
     // Update scene controls
     controls.update(clock.getDelta());
 
@@ -265,6 +266,35 @@ function createScene(){
     plane.rotation.set(0, 0, 0);
     camera.add( plane );
 
+    
+    //Add speedometer
+    let speedo_geomerty = new THREE.PlaneGeometry(3, 2, 32);
+    texture_speedo = new THREE.TextureLoader().load("../textures/speedometer/velocity.png");
+    let speedo_material = new THREE.MeshBasicMaterial( {map: texture_speedo, transparent:true, side: THREE.DoubleSide} );
+    let speedometer = new THREE.Mesh( speedo_geomerty, speedo_material );
+    speedometer.position.set(-3.6, -3.5, 5);
+    speedometer.rotation.set(0, 0, 0);
+    plane.add( speedometer );
+
+
+    //Speedometer pointer 
+    const material = new THREE.LineBasicMaterial({
+        color: 0x0000ff
+    });
+    
+    const points = [];
+    points.push( new THREE.Vector3( 0, 0, 0) );
+    points.push( new THREE.Vector3( -1, 0, 0) );
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    
+    line = new THREE.Line( geometry, material );
+    line.position.set(0, 0, 0);
+    pivot_line = new THREE.Object3D();
+    pivot_line.position.set(-3.7, -4.2, 5);
+    pivot_line.add(line);
+    plane.add( pivot_line );
+  
     // Creating the sun 
     let sun = addPlanet(30, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
     scene.add(sun);
@@ -391,6 +421,8 @@ function createScene(){
      scene.add(firstAsteroids);
      scene.add(secondAsteroids);
      scene.add(thirdAsteroids);
+
+     updateSpeed();
 
 
 }
@@ -530,4 +562,17 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         return onError(err);	
     }	
 }	
+
+function updateSpeed(){
+    setInterval(function() {
+        current_position = camera.position.x;
+        let speed = current_position-last_position;
+        last_position = camera.position.x;
+        if(speed > 0){
+            speed = speed*-1;
+        }
+        line.rotation.z = speed/50;
+
+    }, 1000);
+}
 
