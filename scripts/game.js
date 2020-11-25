@@ -17,6 +17,7 @@ let duration = 5000;
 let currentTime = Date.now();
 let spaceships = null;
 let paths = [];
+let scoreboard = [];
 let lookSpeed = 0.05;
 let velocity = 150;
 let spaceshipNo = 20;
@@ -72,9 +73,12 @@ function onMouseMove(event) {
 document.addEventListener('collision', onCollision, false);
 
 function onCollision(event) {
+
+    scoreboardScene(clock.elapsedTime);
     resetCamera();
     clock.stop();
     clock.start();
+
 }
 
 function resetCamera() {
@@ -285,6 +289,12 @@ function animate() {
 
     timeText.innerHTML = "Time: " + minutes + "m " + (Math.round(clock.elapsedTime) - (minutes * 60)) + "s";
 
+
+
+    if (clock.elapsedTime > 5) {
+        let sb = document.getElementById("scoreboard");
+        sb.style.display = "none";
+    }
 
 
 
@@ -499,6 +509,33 @@ function createScene() {
     thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
 
 
+
+}
+
+function timeSort(a, b) {
+    return a - b;
+}
+
+function scoreboardScene(time) {
+    // Creation of renderer and setting size to browser window size
+
+    let sb = document.getElementById("scoreboard");
+    let sbText = "Scoreboard: <br>"
+    scoreboard.push(time);
+
+    scoreboard.sort(timeSort);
+
+    for (i = 0; i < scoreboard.length; i++) {
+        sbText = sbText + " " + (i + 1) + ". \t" + Math.round(scoreboard[i]) + "s. " + "<br>";
+    }
+    sbText = sbText + "<br>" + "Congratulations! You ended up at number " + (scoreboard.indexOf(time) + 1);
+    sb.innerHTML = sbText;
+    sb.style.display = "block";
+
+
+
+
+    //sb.style.display = "none";
 
 }
 
