@@ -1,40 +1,49 @@
 <html>
+
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Journey to Orion</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Journey to Orion</title>
 
-<link rel="stylesheet" href="../libs/jquery-ui/jquery-ui.css" />
-<link rel="stylesheet" href="../css/main.css" />
+	<link rel="stylesheet" href="../libs/jquery-ui/jquery-ui.css" />
+	<link rel="stylesheet" href="../css/main.css" />
 
-<script src="../libs/jquery-3.4.1/jquery-3.4.1.min.js"></script>
-<script src="../libs/jquery-ui/jquery-ui.js"></script>
-<script src="../libs/three.js/three.js"></script>
-<script src="../libs/three.js/controls/OrbitControls.js"></script>
-<script src="../libs/three.js/controls/FirstPersonControls.js"></script>
-<script src="../libs/three.js/loaders/OBJLoader.js"></script>
+	<script src="../libs/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.js"></script>
+	<script src="../libs/three.js/three.js"></script>
+	<script src="../libs/three.js/controls/OrbitControls.js"></script>
+	<script src="../libs/three.js/controls/FirstPersonControls.js"></script>
+	<script src="../libs/three.js/loaders/OBJLoader.js"></script>
 
-<script src="game.js"></script>
+	<script src="game.js"></script>
 
 
-<script type="text/javascript">
-       
-	$(document).ready(
-			function() {
+	<script type="text/javascript">
+
+		$(document).ready(
+			function () {
 				let canvas = document.getElementById("webglcanvas");
 				createScene();
-		        run();
+				run();
 			}
-	);
+		);
 
-</script>
-<link rel="icon" type="image/png" href="../favicon/favicon.ico"/> 
+	</script>
+
 </head>
+
 <body>
-	<div id="title" style="color:aqua; size:500px">
-		Carla Pérez Gavilán Del Castillo 
-		A01023033
-		Solar System
+	
+
+	<div id="rotation"
+		style="position: absolute; font-size: 70%; left: 32.5%; top: 80%; width: 100% ;z-index: 100 ;display:block; color:white">
+		Rotation:
 	</div>
+
+	<div id="speed"
+		style="position: absolute; font-size: 70%; left: 33%; top: 93%; width: 100%; z-index: 100 ;display:block; color:white">
+		Speed:
+	</div>
+
 </body>
 
 </html>

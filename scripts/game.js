@@ -10,7 +10,7 @@
     *--------------------------------------------------------------------*/
 
 // Declaration of all global variables
-let renderer = null,  scene = null, camera = null;
+let renderer = null, scene = null, camera = null;
 let asteroidBelt, figure;
 let firstSystem, secondSystem, thirdSystem;
 let firstAsteroids, secondAsteroids, thirdAsteroids;
@@ -25,6 +25,7 @@ let loopDuration = 20000;
 let last_position = 0, current_position = 0;	
 let line, pivot_line;
 let loopStart = Date.now();
+let ring_y, ring_x, ring_z;
 
 var xSpeed = 0.00001;
 var ySpeed = 0.00001;
@@ -160,7 +161,7 @@ function animate() {
             // Update rotation of planet around sun (orbital rotation)
             planet.pivotSun.rotation.z += planet.sun_speed;
 
-        });
+    });
 
     // SecondSystem: Update all planets in planet array
     secondSystem.planets.forEach( planet => {
@@ -198,28 +199,28 @@ function run(){
  * createScene: Initializes all objects on the scene before any updates
  */
 
-function createScene(){
+function createScene() {
     // Creation of renderer and setting size to browser window size
-    renderer = new THREE.WebGLRenderer({antialias: true });
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
     // Create scene object
     scene = new THREE.Scene();
 
     // Create camera with ratio of window
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth/ window.innerHeight, 1, 10000 );
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
 
     // Create first Person Controls
-    controls = new THREE.FirstPersonControls( camera, renderer.domElement );
+    controls = new THREE.FirstPersonControls(camera, renderer.domElement);
     controls.movementSpeed = velocity;
     controls.lookSpeed = lookSpeed;
 
     // Start scene background with black
-    scene.background = new THREE.Color( 0, 0, 0 );
+    scene.background = new THREE.Color(0, 0, 0);
 
     // Initialize camara position on top of solar system
-    camera.position.set( 0, 0, 0 );
+    camera.position.set(0, 0, 0);
     camera.position.z = 1000;
 
     controls.update(clock.getDelta());
@@ -236,14 +237,14 @@ function createScene(){
     var pointLight = new THREE.PointLight(pointColor);
 
     // Set sun's point light to center
-    pointLight.position.set(0,0,0);
+    pointLight.position.set(0, 0, 0);
     pointLight.intensity = 2.0;
 
     // Making sure pointLight casts shadow
     pointLight.castShadow = true;
 
     //Adding pointlight to sceen 
-    scene.add(pointLight); 
+    scene.add(pointLight);
 
     {
     const loader = new THREE.CubeTextureLoader();
@@ -268,11 +269,11 @@ function createScene(){
 
     
     //Add speedometer
-    let speedo_geomerty = new THREE.PlaneGeometry(3, 2, 32);
+    let speedo_geomerty = new THREE.PlaneGeometry(2.25, 1.5, 32);
     texture_speedo = new THREE.TextureLoader().load("../textures/speedometer/velocity.png");
     let speedo_material = new THREE.MeshBasicMaterial( {map: texture_speedo, transparent:true, side: THREE.DoubleSide} );
     let speedometer = new THREE.Mesh( speedo_geomerty, speedo_material );
-    speedometer.position.set(-3.6, -3.5, 5);
+    speedometer.position.set(-3.6, -4.3, 5);
     speedometer.rotation.set(0, 0, 0);
     plane.add( speedometer );
 
@@ -291,10 +292,34 @@ function createScene(){
     line = new THREE.Line( geometry, material );
     line.position.set(0, 0, 0);
     pivot_line = new THREE.Object3D();
-    pivot_line.position.set(-3.7, -4.2, 5);
+    pivot_line.position.set(-3.7, -4.8, 5);
     pivot_line.add(line);
     plane.add( pivot_line );
   
+    //Rotation dashboard x
+    let x_ring_geomtery = new THREE.RingGeometry( 0.6, 0.5, 32 );
+    let x_ring_material = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
+    ring_x = new THREE.Mesh( x_ring_geomtery, x_ring_material );
+    plane.add( ring_x );
+    ring_x.position.set(-4, -3, 3);
+
+    //Rotation dashboard y
+    let y_ring_geometry = new THREE.RingGeometry( 0.6, 0.5, 32 );
+    let y_ring_material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+    ring_y = new THREE.Mesh( y_ring_geometry, y_ring_material );
+    plane.add( ring_y );
+    ring_y.position.set(-4, -3, 3);
+    ring_y.rotation.set(0, 1, 0);
+
+    
+    //Rotation dashboard z
+    let z_ring_geometry = new THREE.RingGeometry( 0.6, 0.5, 32 );
+    let z_ring_material = new THREE.MeshBasicMaterial( { color: 0x00ff00, side: THREE.DoubleSide } );
+    ring_z = new THREE.Mesh( z_ring_geometry, z_ring_material );
+    plane.add( ring_z );
+    ring_z.position.set(-4, -3, 3);
+    ring_z.rotation.set(1, 0, 0);
+
     // Creating the sun 
     let sun = addPlanet(30, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
     scene.add(sun);
@@ -324,13 +349,13 @@ function createScene(){
     let lowerLimit = [0, 0, 0];	
     let upperLimit = [2000, 2000, 2000];	
 
-    spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);	
+    spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);
 
-    for (let i = 0; i < spaceshipNo; i++) {	
-        let z = Math.random();	
+    for (let i = 0; i < spaceshipNo; i++) {
+        let z = Math.random();
 
-        paths.push(z);	
-    }	
+        paths.push(z);
+    }
 
     //genSpaceship(objModelUrl, spaceships, 60, 60, 40);
     scene.add(spaceships);
@@ -343,23 +368,23 @@ function createScene(){
     let sun_a = addPlanet(180, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
     scene.add(sun_a);
 
-    random_texture_index = Math.round(Math.random()*15);
+    random_texture_index = Math.round(Math.random() * 15);
     console.log(all_textures[0]);
     console.log(random_texture_index);
 
-    let planetA1 = addPlanet(100, 60, 2.5, "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    let planetA1 = addPlanet(100, 60, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA1, 0, 0.01, 0.01, 0.02, 5, sun_a.position.x, sun_a.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetA2 = addPlanet(130, 850, 3,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetA2 = addPlanet(130, 850, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA2, 0, 0.01, 0.008, 0.01, 6, sun_a.position.x, sun_a.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetA3 = addPlanet(80, 1100, 3.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetA3 = addPlanet(80, 1100, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA3, 0, 0.01, 0.009, 0.01, 7, sun_a.position.x, sun_a.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetA4 = addPlanet(110, 1800, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetA4 = addPlanet(110, 1800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA4, 0, 0.01, 0.005, 0.02, 6, sun_a.position.x, sun_a.position.y);
 
     //  Second System
@@ -369,24 +394,24 @@ function createScene(){
     let sun_b = addPlanet(200, 1000, 5000, "../models/planets/inhospitable/Venusian.png", 1, 0, "");
     scene.add(sun_b);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB1 = addPlanet(120, 400, 2.5,  "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB1 = addPlanet(120, 400, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB1, 0, 0.01, 0.01, 0.02, 5, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB2 = addPlanet(90, 800, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB2 = addPlanet(90, 800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB2, 0, 0.01, 0.008, 0.01, 6, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB3 = addPlanet(80, 1200, 3.5,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB3 = addPlanet(80, 1200, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB3, 0, 0.01, 0.009, 0.01, 7, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB4 = addPlanet(150, 1600, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB4 = addPlanet(150, 1600, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB4, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
 
-    random_texture_index = Math.round(Math.random()*15);
-    let planetB5 = addPlanet(95, 2400, 3,   "../models/planets/"+all_textures[random_texture_index], 1, 0, "");
+    random_texture_index = Math.round(Math.random() * 15);
+    let planetB5 = addPlanet(95, 2400, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     secondSystem.newPlanet(planetB5, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
 
      //  Second System
@@ -423,6 +448,7 @@ function createScene(){
      scene.add(thirdAsteroids);
 
      updateSpeed();
+     updateRotation();
 
 
 }
@@ -468,8 +494,8 @@ function spaceshipMultigen(objModelUrl, number, lowerLimit, upperLimit) {
         z = Math.floor(Math.random() * (upperLimit[2] - lowerLimit[2]) + lowerLimit[2]);
 
         genSpaceship(objModelUrl, spaceships, x, y, z);
-    }	        
-}	
+    }
+}
 
 
 /**	   
@@ -486,8 +512,8 @@ function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
     // Load texture map
     textureMap = new THREE.TextureLoader().load(mapUrl);
 
-    if(mat == 0){
-        if(haveBump == 1){
+    if (mat == 0) {
+        if (haveBump == 1) {
             bumpMap = new THREE.TextureLoader().load(bumpMap);
             material = new THREE.MeshPhongMaterial({ map: textureMap, bumpMap: bumpMap, bumpScale: 0.06 });
         }else{
@@ -495,12 +521,12 @@ function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
         }
     }
     else {
-        material = new THREE.MeshBasicMaterial({ map: textureMap});
+        material = new THREE.MeshBasicMaterial({ map: textureMap });
     }
 
     // Create planet with geometry and material
     let geometry = new THREE.SphereGeometry(radius, 32, 32);
-    let figure = new THREE.Mesh( geometry, material );
+    let figure = new THREE.Mesh(geometry, material);
 
     // Initialize Position
     figure.position.set(x, y, 0);
@@ -564,15 +590,39 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
 }	
 
 function updateSpeed(){
+    let speed_x, speed_y, speed_z;
+    let last_position_x, last_position_y,last_position_z;
     setInterval(function() {
-        current_position = camera.position.x;
-        let speed = current_position-last_position;
-        last_position = camera.position.x;
-        if(speed > 0){
-            speed = speed*-1;
-        }
-        line.rotation.z = speed/50;
+        speed_x = camera.position.x-last_position_x;
+        speed_y = camera.position.y-last_position_y;
+        speed_z = camera.position.z-last_position_z;
+     
+        speed = Math.sqrt((speed_x*speed_x)+(speed_y*speed_y)+(speed_z*speed_z));
+       
 
+        line.rotation.z = -speed/1000;
+        let speed_element = document.getElementById("speed");
+        speed_element.innerHTML = "Speed: "+Math.round(speed/100);
+        last_position_x = camera.position.x;
+        last_position_y = camera.position.x;
+        last_position_z = camera.position.x;
     }, 1000);
 }
 
+
+function updateRotation(){
+    setInterval(function() {
+        current_rotation_x = camera.rotation.x;
+        current_rotation_y = camera.rotation.y;
+        current_rotation_z = camera.rotation.z;
+
+        let rot_x = Math.round((current_rotation_x * 180)/Math.PI);
+        let rot_y = Math.round(current_rotation_y * (180/Math.PI));
+        let rot_z = Math.round(current_rotation_z * (180/Math.PI));
+
+        ring_x.rotation.set(current_rotation_x, current_rotation_y, current_rotation_z);
+        let rotation_element = document.getElementById("rotation");
+        rotation_element.innerHTML = "Rotation: "+rot_x+", "+rot_y+", "+rot_y;
+
+    }, 1000);
+}
