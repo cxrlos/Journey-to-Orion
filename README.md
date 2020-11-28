@@ -46,6 +46,36 @@ You spawn near a planet, and in your screen you will get a prompt for the first 
 
 The code is separated into distinct parts that will be described in a simple fashion in the following subsections:
 
+### 1. System class
+This class is used to model and create the three planetary systems that are present in the scene. It serves as a wrapper for multiple planets and their pivots
+
+### 2. Planet class
+This class is used to model and create each planet that is in the scene, along with its textures, pivot and moons (if applicable). 
+
+### 3. Misc. Event Listeners (onKeyDown, onMouseMove, onCollision)
+These event listeners are used to reduce the strain on the update function, by making certain that certain updates to speed, velocity, position, and so on are only made when necessary,and do not need to be constantly checked. OnKeyDown acts as a secondary movement controller, where you can use WASD to move through space instead of the mouse, onMouseMove returns the current position of the mouse for raycasting and proximity sensor purposes, and onCollision handles the update of the scoreboard and respawn mechanisms. 
+
+### 4. Spaceship Generation (GenSpaceship, SpaceshipMultigen)
+These functions are used to spawn an arbitrary number of spaceships in a user-delimited area, and they handle loading the model from an .obj, grouping, and randomized initial orientation and directions. GenSpaceship creates only one ship, while SpaceshipMultigen uses the former to create an arbitrary number of them. 
+
+### 5. CreateScene
+This function initializes most of the elements that will be needed for the game to function, such as the camera, lighting, FirstPersonControls, spaceship interior, clocks, and so forth, but it also loads the planets and spaceships into the scene using the previously mentioned functions. 
+
+### 6. Run/Animate
+This function runs every tick of in-game time and is responsible for the things that must update periodically, such as the planets' rotation, the spaceship's movement, the sensor  and text updates, and the "NPC" spaceship movement. 
+
+### 7. AddPlanet
+This function is used to insert a Planet object into the scene as part of a system, and render it. 
+
+### 8. UpdateSpeed/Rotation
+These functions run during animate but are separated so as to improve legibility, they are used to update the accelerometer and the gyroscope sensors depending on the spaceship's current movement direction and rotation.
+
+### 9. LoadObj
+This helper function is used to load a .obj object, create a 3d object, and assign it as a child of another object3d, passed as an argument. If the object is a spaceship it is also responsible for the initial randomized orientation. 
+
+### 10. ScoreboardScene
+This function helps control the scoreboard toggle, and it updates the board depending on the stats for your current run. 
+
 ## Work Plan
 - [TRELLO PLAN](https://trello.com/b/zfwuQ9vi)
 
