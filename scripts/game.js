@@ -16,6 +16,7 @@ let firstSystem, secondSystem, thirdSystem;
 let firstAsteroids, secondAsteroids, thirdAsteroids;
 let duration = 5000;
 let currentTime = Date.now();
+let randomPlanet = null;
 
 let spaceships = null;
 let paths = [];
@@ -125,6 +126,7 @@ class System {
         
         let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
         boundingBox.setFromObject(p.object);
+
         let boxHelper = new THREE.Box3Helper(boundingBox, 0xffffff);
         // helper.visible = false;
         this.bounding.push(boxHelper);
@@ -221,13 +223,25 @@ function animate() {
     }
 
     // FirstSystem: Update all planets in planet array
-    firstSystem.planets.forEach(planet => {
+    firstSystem.planets.forEach((planet, index) => {
         // Update rotation of planet on its own speed (axis rotation)
         planet.object.rotation.z += planet.axis_speed;
         // Update rotation of moons around planet (moon rotation)
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
+
+        var absolutePos = new THREE.Vector3();
+        planet.object.getWorldPosition(absolutePos);
+
+        if(index == 1)
+            console.log(firstSystem.bounding[index].position);
+
+        firstSystem.bounding[index].position.copy(absolutePos);
+
+        if(index == 1)
+            console.log(firstSystem.bounding[index].position);
+        
 
     });
 
@@ -591,6 +605,9 @@ function createScene() {
      scene.add(secondAsteroids);
      scene.add(thirdAsteroids);
 
+
+    getRandSys();
+
      updateSpeed();
      updateRotation();
 }
@@ -629,16 +646,16 @@ function generateRandom(max_pos, min_pos){
 
         if(random_system == 0){
             loadObj(objModelUrl, firstAsteroids, rand_x, rand_y, 0);
-            console.log("added asteroid  1 y: "+rand_y+" x: "+rand_x);
+            // console.log("added asteroid  1 y: "+rand_y+" x: "+rand_x);
         }
 
         if(random_system == 1){
             loadObj(objModelUrl, secondAsteroids, rand_x, rand_y, 0);
-            console.log("added asteroid  2 y: "+rand_y+" x: "+rand_x);
+            // console.log("added asteroid  2 y: "+rand_y+" x: "+rand_x);
         }
         if(random_system == 2){
             loadObj(objModelUrl, thirdAsteroids, 200, 200, 0);
-            console.log("added asteroid  3 y: "+rand_y+" x: "+rand_x);
+            // console.log("added asteroid  3 y: "+rand_y+" x: "+rand_x);
 
         }
       }, 5000);
@@ -793,3 +810,25 @@ function updateRotation(){
 
     }, 1000);
 }
+
+function getRandSys(){
+
+    var ranSystem = (Math.random()*3);
+    switch(ranSystem){
+        case 0: 
+            var ranPlanet = firstSystem[Math.floor(Math.random() * firstSystem.length)];
+            break;
+        case 1:
+            var ranPlanet = secondSystem[Math.floor(Math.random() * secondSystem.length)];
+            break;
+        case 2:
+            var ranPlanet = thirdSystem[Math.floor(Math.random() * thirdSystem.length)];
+            break;
+        default:
+            break;
+    }
+    console.log(ranPlanet);
+    
+    // return planetObj;
+}
+
