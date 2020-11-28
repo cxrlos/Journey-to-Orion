@@ -13,8 +13,10 @@
 let renderer = null, scene = null, camera = null;
 let asteroidBelt, figure;
 let firstSystem, secondSystem, thirdSystem;
+let firstAsteroids, secondAsteroids, thirdAsteroids;
 let duration = 5000;
 let currentTime = Date.now();
+
 let spaceships = null;
 let paths = [];
 let scoreboard = [];
@@ -27,7 +29,9 @@ let mouse = new THREE.Vector2();
 let sensorImage = null;
 let overlayText = null;
 let timeText = null;
-
+let last_position = 0, current_position = 0;	
+let line, pivot_line;
+let ring_y, ring_x, ring_z;
 
 var xSpeed = 0.001;
 var ySpeed = 0.001;
@@ -323,9 +327,9 @@ function createScene() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-
     overlayText = document.getElementById("distance");
     timeText = document.getElementById("chrono");
+
 
     // Create scene object
     scene = new THREE.Scene();
@@ -368,8 +372,6 @@ function createScene() {
     //Adding pointlight to sceen 
     scene.add(pointLight);
 
-
-
     {
         const loader = new THREE.CubeTextureLoader();
         const texture = loader.load([
@@ -391,6 +393,59 @@ function createScene() {
     plane.position.set(0, 0, -20);
     plane.rotation.set(0, 0, 0);
     camera.add(plane);
+
+    
+    //Add speedometer
+    let speedo_geomerty = new THREE.PlaneGeometry(2.25, 1.5, 32);
+    texture_speedo = new THREE.TextureLoader().load("../textures/speedometer/velocity.png");
+    let speedo_material = new THREE.MeshBasicMaterial( {map: texture_speedo, transparent:true, side: THREE.DoubleSide} );
+    let speedometer = new THREE.Mesh( speedo_geomerty, speedo_material );
+    speedometer.position.set(-3.6, -4.3, 5);
+    speedometer.rotation.set(0, 0, 0);
+    plane.add( speedometer );
+
+
+    //Speedometer pointer 
+    const material = new THREE.LineBasicMaterial({
+        color: 0x0000ff
+    });
+    
+    const points = [];
+    points.push( new THREE.Vector3( 0, 0, 0) );
+    points.push( new THREE.Vector3( -1, 0, 0) );
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    
+    line = new THREE.Line( geometry, material );
+    line.position.set(0, 0, 0);
+    pivot_line = new THREE.Object3D();
+    pivot_line.position.set(-3.7, -4.8, 5);
+    pivot_line.add(line);
+    plane.add( pivot_line );
+  
+    //Rotation dashboard x
+    let x_ring_geomtery = new THREE.RingGeometry( 0.6, 0.5, 32 );
+    let x_ring_material = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
+    ring_x = new THREE.Mesh( x_ring_geomtery, x_ring_material );
+    plane.add( ring_x );
+    ring_x.position.set(-4, -3, 3);
+
+    //Rotation dashboard y
+    let y_ring_geometry = new THREE.RingGeometry( 0.6, 0.5, 32 );
+    let y_ring_material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+    ring_y = new THREE.Mesh( y_ring_geometry, y_ring_material );
+    plane.add( ring_y );
+    ring_y.position.set(-4, -3, 3);
+    ring_y.rotation.set(0, 1, 0);
+
+    
+    //Rotation dashboard z
+    let z_ring_geometry = new THREE.RingGeometry( 0.6, 0.5, 32 );
+    let z_ring_material = new THREE.MeshBasicMaterial( { color: 0x00ff00, side: THREE.DoubleSide } );
+    ring_z = new THREE.Mesh( z_ring_geometry, z_ring_material );
+    plane.add( ring_z );
+    ring_z.position.set(-4, -3, 3);
+    ring_z.rotation.set(1, 0, 0);
 
     // Creating the sun 
     let sun = addPlanet(30, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
@@ -441,7 +496,6 @@ function createScene() {
     scene.add(sun_a);
 
     random_texture_index = Math.round(Math.random() * 15);
-
 
     let planetA1 = addPlanet(100, 60, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA1, 0, 0.01, 0.01, 0.02, 5, sun_a.position.x, sun_a.position.y);
@@ -509,7 +563,18 @@ function createScene() {
     thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
 
 
+     firstAsteroids = new THREE.Object3D;	
+     secondAsteroids = new THREE.Object3D;	
+     thirdAsteroids = new THREE.Object3D;	
+     
+     generateRandom(1000, -1000);
 
+     scene.add(firstAsteroids);
+     scene.add(secondAsteroids);
+     scene.add(thirdAsteroids);
+
+     updateSpeed();
+     updateRotation();
 }
 
 function timeSort(a, b) {
@@ -536,8 +601,31 @@ function scoreboardScene(time) {
 
 
     //sb.style.display = "none";
+     
+function generateRandom(max_pos, min_pos){
+    setInterval(function() {
+        let rand_x = Math.random()* (max_pos - min_pos) + min_pos;
+        let rand_y = Math.random()* (max_pos - min_pos) + min_pos;
+        let random_system = Math.round(Math.random()*2);
+        let objModelUrl = { obj: '../models/asteroids/A2.obj', map: '../models/asteroids/Textures/Normal.jpg', scale: 0.4 };	
 
+        if(random_system == 0){
+            loadObj(objModelUrl, firstAsteroids, rand_x, rand_y, 0);
+            console.log("added asteroid  1 y: "+rand_y+" x: "+rand_x);
+        }
+
+        if(random_system == 1){
+            loadObj(objModelUrl, secondAsteroids, rand_x, rand_y, 0);
+            console.log("added asteroid  2 y: "+rand_y+" x: "+rand_x);
+        }
+        if(random_system == 2){
+            loadObj(objModelUrl, thirdAsteroids, 200, 200, 0);
+            console.log("added asteroid  3 y: "+rand_y+" x: "+rand_x);
+
+        }
+      }, 5000);
 }
+
 
 /**
  * Creates x amount of spaceship objects at the specified x,y,z coordinates	
@@ -650,3 +738,40 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
     }
 }
 
+function updateSpeed(){
+    let speed_x, speed_y, speed_z;
+    let last_position_x, last_position_y,last_position_z;
+    setInterval(function() {
+        speed_x = camera.position.x-last_position_x;
+        speed_y = camera.position.y-last_position_y;
+        speed_z = camera.position.z-last_position_z;
+     
+        speed = Math.sqrt((speed_x*speed_x)+(speed_y*speed_y)+(speed_z*speed_z));
+       
+
+        line.rotation.z = -speed/1000;
+        let speed_element = document.getElementById("speed");
+        speed_element.innerHTML = "Speed: "+Math.round(speed/100);
+        last_position_x = camera.position.x;
+        last_position_y = camera.position.x;
+        last_position_z = camera.position.x;
+    }, 1000);
+}
+
+
+function updateRotation(){
+    setInterval(function() {
+        current_rotation_x = camera.rotation.x;
+        current_rotation_y = camera.rotation.y;
+        current_rotation_z = camera.rotation.z;
+
+        let rot_x = Math.round((current_rotation_x * 180)/Math.PI);
+        let rot_y = Math.round(current_rotation_y * (180/Math.PI));
+        let rot_z = Math.round(current_rotation_z * (180/Math.PI));
+
+        ring_x.rotation.set(current_rotation_x, current_rotation_y, current_rotation_z);
+        let rotation_element = document.getElementById("rotation");
+        rotation_element.innerHTML = "Rotation: "+rot_x+", "+rot_y+", "+rot_y;
+
+    }, 1000);
+}
