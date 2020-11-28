@@ -597,7 +597,7 @@ function scoreboardScene(time) {
     sb.innerHTML = sbText;
     sb.style.display = "block";
 
-
+}
 
 
     //sb.style.display = "none";
