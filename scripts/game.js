@@ -33,6 +33,9 @@ let last_position = 0, current_position = 0;
 let line, pivot_line;
 let ring_y, ring_x, ring_z;
 
+let arrow = null;
+let arrow_pv = null;
+
 var xSpeed = 0.001;
 var ySpeed = 0.001;
 var zSpeed = 0.001;
@@ -114,10 +117,18 @@ function resetCamera() {
 class System {
     constructor() {
         this.planets = [];
+        this.bounding = [];
     }
     newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
         let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y);
         this.planets.push(p);
+        
+        let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+        boundingBox.setFromObject(p.object);
+        let boxHelper = new THREE.Box3Helper(boundingBox, 0xffffff);
+        // helper.visible = false;
+        this.bounding.push(boxHelper);
+        scene.add(boxHelper);
     }
 }
 
@@ -394,6 +405,13 @@ function createScene() {
     plane.rotation.set(0, 0, 0);
     camera.add(plane);
 
+
+    // Add arrow
+    let arrow_pv = new THREE.Object3D;
+    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04};
+    genSpaceship(arrowURL, arrow_pv, 0, 0, 0);
+    arrow_pv.position.set(1.25,-.95,-5);
+    camera.add(arrow_pv);
     
     //Add speedometer
     let speedo_geomerty = new THREE.PlaneGeometry(2.25, 1.5, 32);
