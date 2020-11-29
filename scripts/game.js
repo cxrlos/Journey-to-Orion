@@ -46,10 +46,6 @@ const collideEvent = new Event('collision');
 raycaster.near = 30;
 raycaster.far = 2000;
 
-
-
-
-
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
@@ -123,12 +119,12 @@ class System {
         let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y);
         this.planets.push(p);
         
-        let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-        boundingBox.setFromObject(p.object);
-        let boxHelper = new THREE.Box3Helper(boundingBox, 0xffffff);
-        // helper.visible = false;
-        this.bounding.push(boxHelper);
-        scene.add(boxHelper);
+        // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+        // boundingBox.setFromObject(p.object);
+        // let boxHelper = new THREE.Box3Helper(boundingBox, 0xffffff);
+        // // helper.visible = false;
+        // this.bounding.push(boxHelper);
+        // scene.add(boxHelper);
     }
 }
 
@@ -155,6 +151,15 @@ class Planet {
 
         // Add planet to sun pivot point
         this.pivotSun.add(object);
+
+        console.log(this.object);
+        // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+        // boundingBox.setFromObject(p.object);
+        this.boundingBox = new THREE.BoxHelper(this.object, 0xffffff);
+        this.boundingBox.update();
+        this.boundingBox.visible = true;
+        // helper.visible = false;
+        scene.add(this.boundingBox);
 
         // Add all other objects to pivotSun
         this.pivotSun.add(this.all);
@@ -194,7 +199,6 @@ class Planet {
             this.privotCenter.add(m);
         }
     }
-
 }
 
 /**
@@ -228,7 +232,8 @@ function animate() {
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
-
+        // Update each planet's bounding box
+        planet.boundingBox.update();
     });
 
     // SecondSystem: Update all planets in planet array
@@ -321,7 +326,6 @@ function animate() {
  */
 function run() {
     requestAnimationFrame(function () { run(); });
-
 
     // Render the scene
     renderer.render(scene, camera);
