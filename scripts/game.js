@@ -244,6 +244,7 @@ function animate() {
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
+        planet.boundingBox.update();
     });
 
     // ThirdSystem: Update all planets in planet array
@@ -254,6 +255,7 @@ function animate() {
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
+        planet.boundingBox.update();
     });
 
     //establish origin and direction for raycaster
