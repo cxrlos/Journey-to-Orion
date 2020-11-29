@@ -16,7 +16,6 @@ let firstSystem, secondSystem, thirdSystem;
 let firstAsteroids, secondAsteroids, thirdAsteroids;
 let duration = 5000;
 let currentTime = Date.now();
-let randomPlanet = null;
 
 let spaceships = null;
 let paths = [];
@@ -35,7 +34,8 @@ let line, pivot_line;
 let ring_y, ring_x, ring_z;
 
 let arrow = null;
-let arrow_pv = null;
+let arrow_pv = new THREE.Object3D;
+let randomPlanet = new THREE.Object3D;
 
 var xSpeed = 0.001;
 var ySpeed = 0.001;
@@ -234,13 +234,13 @@ function animate() {
         var absolutePos = new THREE.Vector3();
         planet.object.getWorldPosition(absolutePos);
 
-        if(index == 1)
-            console.log(firstSystem.bounding[index].position);
+        // if(index == 1)
+            // console.log(firstSystem.bounding[index].position);
 
         firstSystem.bounding[index].position.copy(absolutePos);
 
-        if(index == 1)
-            console.log(firstSystem.bounding[index].position);
+        // if(index == 1)
+            // console.log(firstSystem.bounding[index].position);
         
 
     });
@@ -264,6 +264,11 @@ function animate() {
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
     });
+
+
+    var randPlanetPos = new THREE.Vector3();
+    randomPlanet.getWorldPosition(randPlanetPos);
+    arrow_pv.lookAt(randPlanetPos);
 
     //establish origin and direction for raycaster
     raycaster.setFromCamera(mouse, camera);
@@ -421,10 +426,10 @@ function createScene() {
 
 
     // Add arrow
-    let arrow_pv = new THREE.Object3D;
     let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04};
-    genSpaceship(arrowURL, arrow_pv, 0, 0, 0);
+    loadObj(arrowURL, arrow_pv, 0, 0, 0);
     arrow_pv.position.set(1.25,-.95,-5);
+    // arrow_pv.lookAt(0,0,0);
     camera.add(arrow_pv);
     
     //Add speedometer
@@ -606,7 +611,8 @@ function createScene() {
      scene.add(thirdAsteroids);
 
 
-    getRandSys();
+    randomPlanet = getRandSys();
+
 
      updateSpeed();
      updateRotation();
@@ -765,7 +771,8 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         PivotPoint.position.z = z;
         PivotPoint.position.x = x;
         PivotPoint.position.y = y;
-        PivotPoint.rotation.y = Math.floor(Math.random() * 360);
+        if(texture)
+            PivotPoint.rotation.y = Math.floor(Math.random() * 360); 
         objectList.add(PivotPoint);
     }
     catch (err) {
@@ -813,22 +820,21 @@ function updateRotation(){
 
 function getRandSys(){
 
-    var ranSystem = (Math.random()*3);
+    var ranSystem = (Math.floor(Math.random()*3));
+
     switch(ranSystem){
         case 0: 
-            var ranPlanet = firstSystem[Math.floor(Math.random() * firstSystem.length)];
+            var ranPlanet = firstSystem.planets[Math.floor(Math.random() * firstSystem.planets.length)];
             break;
         case 1:
-            var ranPlanet = secondSystem[Math.floor(Math.random() * secondSystem.length)];
+            var ranPlanet = secondSystem.planets[Math.floor(Math.random() * secondSystem.planets.length)];
             break;
         case 2:
-            var ranPlanet = thirdSystem[Math.floor(Math.random() * thirdSystem.length)];
+            var ranPlanet = thirdSystem.planets[Math.floor(Math.random() * thirdSystem.planets.length)];
             break;
         default:
             break;
     }
-    console.log(ranPlanet);
-    
-    // return planetObj;
+    return ranPlanet.object;
 }
 
