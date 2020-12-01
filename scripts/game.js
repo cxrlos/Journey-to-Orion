@@ -268,7 +268,21 @@ function animate() {
         planet.pivotSun.rotation.z += planet.sun_speed;
         planet.boundingBox.update();
     });
-
+    console.log("first asteroids");
+    console.log(firstAsteroids);
+    //Asteroid rotation
+    firstAsteroids.children.forEach(asteroid =>
+        {
+            asteroid.rotation.z += 0.01;
+        });
+    secondAsteroids.children.forEach(asteroid =>
+        {
+            asteroid.rotation.z += 0.01;
+        });
+    thirdAsteroids.children.forEach(asteroid =>
+        {
+            asteroid.rotation.z += 0.01;
+        });
 
     var randPlanetPos = new THREE.Vector3();
     randomPlanet.getWorldPosition(randPlanetPos);
@@ -621,10 +635,15 @@ function createScene() {
     secondAsteroids = new THREE.Object3D;
     thirdAsteroids = new THREE.Object3D;
 
-    generateRandom(1000, -1000);
+    generateRandom(5000, -5000);
 
+    firstAsteroids.position.set(sun_a.position.x, sun_a.position.y, 0);
     scene.add(firstAsteroids);
+
+    secondAsteroids.position.set(sun_b.position.x, sun_b.position.y, 0);
     scene.add(secondAsteroids);
+
+    thirdAsteroids.position.set(sun_c.position.x, sun_c.position.y, 0);
     scene.add(thirdAsteroids);
 
     randomPlanet = getRandSys();
@@ -669,22 +688,19 @@ function generateRandom(max_pos, min_pos) {
         let rand_x = Math.random() * (max_pos - min_pos) + min_pos;
         let rand_y = Math.random() * (max_pos - min_pos) + min_pos;
         let random_system = Math.round(Math.random() * 2);
-        let objModelUrl = { obj: '../models/asteroids/A2.obj', map: '../models/asteroids/Textures/Normal.jpg', scale: 0.4 };
+        let objModelUrl = { obj: '../models/asteroids/A2.obj', map: '../models/asteroids/Textures/Normal.jpg', scale: 25 };
 
         if (random_system == 0) {
-            loadObj(objModelUrl, firstAsteroids, rand_x, rand_y, 0);
-            // console.log("added asteroid  1 y: "+rand_y+" x: "+rand_x);
+            loadObj(objModelUrl, firstAsteroids, rand_x, rand_y, -400);
         }
 
         if (random_system == 1) {
-            loadObj(objModelUrl, secondAsteroids, rand_x, rand_y, 0);
-            // console.log("added asteroid  2 y: "+rand_y+" x: "+rand_x);
+            loadObj(objModelUrl, secondAsteroids, rand_x, rand_y, -400);
         }
         if (random_system == 2) {
-            loadObj(objModelUrl, thirdAsteroids, 200, 200, 0);
-            // console.log("added asteroid  3 y: "+rand_y+" x: "+rand_x);
+            loadObj(objModelUrl, thirdAsteroids, rand_x, rand_y, -400);
         }
-    }, 5000);
+    }, 20000);
 }
 
 
@@ -800,6 +816,48 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
     }
 }
 
+
+async function loadObj(objModelUrl, objectList, x, y, z) {
+    const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());
+    try {
+        const object = await objPromiseLoader.load(objModelUrl.obj);
+
+        let texture = objModelUrl.hasOwnProperty('map') ? new THREE.TextureLoader().load(objModelUrl.map) : null;
+        let normalMap = objModelUrl.hasOwnProperty('normalMap') ? new THREE.TextureLoader().load(objModelUrl.normalMap) : null;
+        let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;
+        let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                child.material.map = texture;
+                child.material.normalMap = normalMap;
+                child.material.specularMap = specularMap;
+            }
+        });
+
+        object.scale.set(scale, scale, scale);
+        object.position.z = z;
+        object.position.x = x;
+        object.position.y = y;
+        object.rotation.y = 2 * Math.PI;
+        object.name = "Spaceship";
+
+        let PivotPoint = new THREE.Object3D;
+
+        PivotPoint.add(object);
+        PivotPoint.position.z = z;
+        PivotPoint.position.x = x;
+        PivotPoint.position.y = y;
+        if(texture)
+            PivotPoint.rotation.y = Math.floor(Math.random() * 360); 
+        objectList.add(PivotPoint);
+    }
+    catch (err) {
+        return onError(err);
+    }
+}
 function updateSpeed() {
     let speed_x, speed_y, speed_z;
     let last_position_x, last_position_y, last_position_z;
