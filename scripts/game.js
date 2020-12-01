@@ -33,6 +33,8 @@ let last_position = 0, current_position = 0;
 let line, pivot_line;
 let ring_y, ring_x, ring_z;
 
+let acceleration = 0.5;
+
 let arrow = null;
 let arrow_pv = new THREE.Object3D;
 let randomPlanet = new THREE.Object3D;
@@ -50,6 +52,8 @@ raycaster.far = 2000;
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
+    ySpeed = ySpeed + acceleration;
+    xSpeed = xSpeed + acceleration;
     if (keyCode == 87) {
         camera.position.y += ySpeed;
     } else if (keyCode == 83) {
@@ -63,12 +67,19 @@ function onDocumentKeyDown(event) {
     }
 };
 
+document.addEventListener("keyup", event => {
+    if (event.isComposing || event.code === 229) {
+      return;
+    }
+    if(event.code == "KeyA" ||event.code == "KeyW" || event.code == "KeyS" || event.code == "KeyD"){
+        xSpeed = 0.001;
+        ySpeed = 0.001;
+        zSpeed = 0.001;
+    }
+}, false);
+
 document.addEventListener("mousemove", onMouseMove, false);
 function onMouseMove(event) {
-
-    // calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
@@ -780,18 +791,25 @@ function updateSpeed() {
     let last_position_x, last_position_y, last_position_z;
     setInterval(function () {
         speed_x = camera.position.x - last_position_x;
-        speed_y = camera.position.y - last_position_y;
-        speed_z = camera.position.z - last_position_z;
 
-        speed = Math.sqrt((speed_x * speed_x) + (speed_y * speed_y) + (speed_z * speed_z));
-
-
-        line.rotation.z = -speed / 1000;
+        let final_speed = (speed_x * Math.PI)/2000;
+       
+        if(final_speed < 0){
+            final_speed = -final_speed;
+        }
+        if(final_speed > Math.PI){
+            final_speed = Math.PI;
+        }
+        line.rotation.set(0, 0, -final_speed);
         let speed_element = document.getElementById("speed");
-        speed_element.innerHTML = "Speed: " + Math.round(speed / 100);
+        if(speed_x < 0){
+            speed_x = -speed_x;
+        }
+        speed_element.innerHTML = "Speed: " + Math.round(speed_x);
+
         last_position_x = camera.position.x;
-        last_position_y = camera.position.x;
-        last_position_z = camera.position.x;
+        console.log("speed: "+final_speed);
+
     }, 1000);
 }
 
