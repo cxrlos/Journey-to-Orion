@@ -34,7 +34,8 @@ let line, pivot_line;
 let ring_y, ring_x, ring_z;
 
 let arrow = null;
-let arrow_pv = null;
+let arrow_pv = new THREE.Object3D;
+let randomPlanet = new THREE.Object3D;
 
 var xSpeed = 0.001;
 var ySpeed = 0.001;
@@ -225,14 +226,13 @@ function animate() {
     }
 
     // FirstSystem: Update all planets in planet array
-    firstSystem.planets.forEach(planet => {
+    firstSystem.planets.forEach((planet, index) => {
         // Update rotation of planet on its own speed (axis rotation)
         planet.object.rotation.z += planet.axis_speed;
         // Update rotation of moons around planet (moon rotation)
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
-        // Update each planet's bounding box
         planet.boundingBox.update();
     });
 
@@ -257,6 +257,11 @@ function animate() {
         planet.pivotSun.rotation.z += planet.sun_speed;
         planet.boundingBox.update();
     });
+
+
+    var randPlanetPos = new THREE.Vector3();
+    randomPlanet.getWorldPosition(randPlanetPos);
+    arrow_pv.lookAt(randPlanetPos);
 
     //establish origin and direction for raycaster
     raycaster.setFromCamera(mouse, camera);
@@ -413,10 +418,10 @@ function createScene() {
 
 
     // Add arrow
-    let arrow_pv = new THREE.Object3D;
-    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04 };
-    genSpaceship(arrowURL, arrow_pv, 0, 0, 0);
-    arrow_pv.position.set(1.25, -.95, -5);
+    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04};
+    loadObj(arrowURL, arrow_pv, 0, 0, 0);
+    arrow_pv.position.set(1.25,-.95,-5);
+    // arrow_pv.lookAt(0,0,0);
     camera.add(arrow_pv);
 
     //Add speedometer
@@ -597,8 +602,10 @@ function createScene() {
     scene.add(secondAsteroids);
     scene.add(thirdAsteroids);
 
-    updateSpeed();
-    updateRotation();
+    randomPlanet = getRandSys();
+
+     updateSpeed();
+     updateRotation();
 }
 
 function timeSort(a, b) {
@@ -641,17 +648,16 @@ function generateRandom(max_pos, min_pos) {
 
         if (random_system == 0) {
             loadObj(objModelUrl, firstAsteroids, rand_x, rand_y, 0);
-            console.log("added asteroid  1 y: " + rand_y + " x: " + rand_x);
+            // console.log("added asteroid  1 y: "+rand_y+" x: "+rand_x);
         }
 
         if (random_system == 1) {
             loadObj(objModelUrl, secondAsteroids, rand_x, rand_y, 0);
-            console.log("added asteroid  2 y: " + rand_y + " x: " + rand_x);
+            // console.log("added asteroid  2 y: "+rand_y+" x: "+rand_x);
         }
         if (random_system == 2) {
             loadObj(objModelUrl, thirdAsteroids, 200, 200, 0);
-            console.log("added asteroid  3 y: " + rand_y + " x: " + rand_x);
-
+            // console.log("added asteroid  3 y: "+rand_y+" x: "+rand_x);
         }
     }, 5000);
 }
@@ -760,7 +766,8 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         PivotPoint.position.z = z;
         PivotPoint.position.x = x;
         PivotPoint.position.y = y;
-        PivotPoint.rotation.y = Math.floor(Math.random() * 360);
+        if(texture)
+            PivotPoint.rotation.y = Math.floor(Math.random() * 360); 
         objectList.add(PivotPoint);
     }
     catch (err) {
@@ -805,3 +812,24 @@ function updateRotation() {
 
     }, 1000);
 }
+
+function getRandSys(){
+
+    var ranSystem = (Math.floor(Math.random()*3));
+
+    switch(ranSystem){
+        case 0: 
+            var ranPlanet = firstSystem.planets[Math.floor(Math.random() * firstSystem.planets.length)];
+            break;
+        case 1:
+            var ranPlanet = secondSystem.planets[Math.floor(Math.random() * secondSystem.planets.length)];
+            break;
+        case 2:
+            var ranPlanet = thirdSystem.planets[Math.floor(Math.random() * thirdSystem.planets.length)];
+            break;
+        default:
+            break;
+    }
+    return ranPlanet.object;
+}
+
