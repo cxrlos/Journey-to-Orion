@@ -32,10 +32,13 @@ let timeText = null;
 let last_position = 0, current_position = 0;
 let line, pivot_line;
 let ring_y, ring_x, ring_z;
+let planeUUID = null;
+let collisionUUID = null;
 
 let arrow = null;
 let arrow_pv = new THREE.Object3D;
 let randomPlanet = new THREE.Object3D;
+let playerBoundingBox = new THREE.Box3();
 
 var xSpeed = 0.001;
 var ySpeed = 0.001;
@@ -78,10 +81,19 @@ document.addEventListener('collision', onCollision, false);
 
 function onCollision(event) {
 
-    scoreboardScene(clock.elapsedTime);
-    resetCamera();
-    clock.stop();
-    clock.start();
+    if (collisionUUID != randomPlanet.uuid) {
+        loserScene();
+        resetCamera();
+        clock.stop();
+        clock.start();
+    }
+
+    else {
+        scoreboardScene(clock.elapsedTime);
+        resetCamera();
+        clock.stop();
+        clock.start();
+    }
 
 }
 
@@ -114,18 +126,10 @@ function resetCamera() {
 class System {
     constructor() {
         this.planets = [];
-        this.bounding = [];
     }
     newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
         let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y);
         this.planets.push(p);
-
-        // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-        // boundingBox.setFromObject(p.object);
-        // let boxHelper = new THREE.Box3Helper(boundingBox, 0xffffff);
-        // // helper.visible = false;
-        // this.bounding.push(boxHelper);
-        // scene.add(boxHelper);
     }
 }
 
@@ -153,14 +157,14 @@ class Planet {
         // Add planet to sun pivot point
         this.pivotSun.add(object);
 
-        console.log(this.object);
-        // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-        // boundingBox.setFromObject(p.object);
-        this.boundingBox = new THREE.BoxHelper(this.object, 0xffffff);
-        this.boundingBox.update();
-        this.boundingBox.visible = true;
-        // helper.visible = false;
-        scene.add(this.boundingBox);
+        this.collisionObj = new THREE.Box3();
+        this.collisionObj.setFromObject(this.object);
+
+        // this.boundingBox = new THREE.BoxHelper(this.object, 0xffffff);
+        // this.boundingBox.update();
+        // this.boundingBox.visible = false;
+
+        // scene.add(this.boundingBox);
 
         // Add all other objects to pivotSun
         this.pivotSun.add(this.all);
@@ -210,6 +214,9 @@ function animate() {
     // Update scene controls
     controls.update(clock.getDelta());
 
+    // Add player reference point 
+    let player = new THREE.Vector3(camera.position);
+
     let timer = Date.now();
     let delta = timer - loopStart;
 
@@ -226,7 +233,7 @@ function animate() {
     }
 
     // FirstSystem: Update all planets in planet array
-    firstSystem.planets.forEach((planet, index) => {
+    firstSystem.planets.forEach(planet => {
         // Update rotation of planet on its own speed (axis rotation)
         planet.object.rotation.z += planet.axis_speed;
         // Update rotation of moons around planet (moon rotation)
@@ -234,6 +241,10 @@ function animate() {
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
         planet.boundingBox.update();
+
+        // boxCollision = planet.collisionObj.containsPoint(player);
+        // if(boxCollision)
+        //     document.dispatchEvent(collideEvent);
     });
 
     // SecondSystem: Update all planets in planet array
@@ -245,6 +256,10 @@ function animate() {
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
         planet.boundingBox.update();
+
+        // boxCollision = planet.collisionObj.containsPoint(player);
+        // if(boxCollision)
+        //     document.dispatchEvent(collideEvent);
     });
 
     // ThirdSystem: Update all planets in planet array
@@ -256,6 +271,10 @@ function animate() {
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
         planet.boundingBox.update();
+
+        // boxCollision = planet.collisionObj.containsPoint(player);
+        // if(boxCollision)
+        //     document.dispatchEvent(collideEvent);
     });
 
 
@@ -302,30 +321,29 @@ function animate() {
             sensorImage.copy(figure);
             overlayText.innerHTML = "Distance: " + Math.round(intersects[0].distance) + " km";
 
+            // console.log(intersects[0].object.uuid);
+            // console.log(randomPlanet.uuid);
+            // console.log(planeUUID);
+            let intersectUUID = intersects[0].uuid;
+
             //Collision placeholder
             if (Math.round(intersects[0].distance) < 40) {
-                document.dispatchEvent(collideEvent);
+                if(intersectUUID != planeUUID || intersectUUID == null){
+                    collisionUUID = intersectUUID;
+                    document.dispatchEvent(collideEvent);
+                }
             }
         }
 
     }
     // else sensorImage = null;
     let minutes = Math.floor(Math.round(clock.elapsedTime) / 60);
-
-
-
     timeText.innerHTML = "Time: " + minutes + "m " + (Math.round(clock.elapsedTime) - (minutes * 60)) + "s";
-
-
 
     if (clock.elapsedTime > 5) {
         let sb = document.getElementById("scoreboard");
         sb.style.display = "none";
     }
-
-
-
-
 }
 
 /**
@@ -333,7 +351,6 @@ function animate() {
  */
 function run() {
     requestAnimationFrame(function () { run(); });
-
     // Render the scene
     renderer.render(scene, camera);
     // Update rotations calling animate
@@ -412,10 +429,12 @@ function createScene() {
     textureMap = new THREE.TextureLoader().load("../textures/cockpit/dashboard.png");
     let plane_material = new THREE.MeshBasicMaterial({ map: textureMap, transparent: true, side: THREE.DoubleSide });
     let plane = new THREE.Mesh(plane_geometry, plane_material);
+    planeUUID = plane.uuid;
     plane.position.set(0, 0, -20);
     plane.rotation.set(0, 0, 0);
     camera.add(plane);
 
+    //camera.add(playerBoundingBox);
 
     // Add arrow
     let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04};
@@ -636,6 +655,27 @@ function scoreboardScene(time) {
 
 }
 
+function loserScene() {
+    // Creation of renderer and setting size to browser window size
+
+    let sb = document.getElementById("scoreboard");
+    let sbText = "Scoreboard: <br>"
+    scoreboard.sort(timeSort);
+    scoreLen = scoreboard.length;
+
+    if (scoreLen > 10) {
+        scoreLen = 10;
+    }
+
+    for (i = 0; i < scoreLen; i++) {
+        sbText = sbText + " " + (i + 1) + ". \t" + Math.round(scoreboard[i]) + "s. " + "<br>";
+    }
+    sbText = sbText + "<br>" + "You collided with an astral object! Try again to get into the scoreboard!";
+    sb.innerHTML = sbText;
+    sb.style.display = "block";
+
+}
+
 
 //sb.style.display = "none";
 
@@ -808,7 +848,7 @@ function updateRotation() {
 
         ring_x.rotation.set(current_rotation_x, current_rotation_y, current_rotation_z);
         let rotation_element = document.getElementById("rotation");
-        rotation_element.innerHTML = "Rotation: " + rot_x + ", " + rot_y + ", " + rot_y;
+        rotation_element.innerHTML = "Rotation: " + rot_x + ", " + rot_y + ", " + rot_z;
 
     }, 1000);
 }
