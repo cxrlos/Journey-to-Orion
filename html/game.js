@@ -70,7 +70,7 @@ raycaster.far = 2000;
     *--------------------------------------------------------------------*/
 
 // Waits for keypress
-document.addEventListener("keydown", onDocumentKeyDown, false); 
+document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
     var direction = new THREE.Vector3();
@@ -79,22 +79,22 @@ function onDocumentKeyDown(event) {
 
     if (keyCode == 87) { // Movement for W
 
-        if (ySpeed < maxSpeed) 
+        if (ySpeed < maxSpeed)
             ySpeed = ySpeed + acceleration;
 
-        else if (ySpeed >= maxSpeed) 
+        else if (ySpeed >= maxSpeed)
             ySpeed = maxSpeed
 
         camera.position.add(direction.multiplyScalar(ySpeed));
 
     } else if (keyCode == 83) { // Movement for A
 
-        if (ySpeed < maxSpeed) 
+        if (ySpeed < maxSpeed)
             ySpeed = ySpeed - acceleration;
 
-        else if (ySpeed >= maxSpeed) 
+        else if (ySpeed >= maxSpeed)
             ySpeed = maxSpeed
-        
+
         camera.position.add(direction.multiplyScalar(ySpeed));
 
     } else if (keyCode == 65)  // Movement for S
@@ -105,7 +105,7 @@ function onDocumentKeyDown(event) {
 
     else if (keyCode == 32)  // Reset camera using the Space key
         camera.position.set(0, 0, 0);
-    
+
 };
 
 
@@ -133,7 +133,7 @@ document.addEventListener("keyup", event => {
 function decreaseCounter() {
     setInterval(function () {
         if (currentSpeed > 0) {
-            currentSpeed = currentSpeed - acceleration * 400;
+            currentSpeed = currentSpeed - acceleration * 200;
         }
         if (currentSpeed < 0) {
             currentSpeed = 0;
@@ -171,6 +171,8 @@ function onCollision(event) {
     if (collisionUUID != randomPlanet.uuid) {
         loserScene();
         resetCamera();
+        clock.stop();
+        clock.start();
     }
 
     // In case it collides with the randomly assigned objective 
@@ -211,7 +213,7 @@ function resetCamera() {
     camera.position.copy(locations[selecter]);
 
     // Given a camera reset, a new objective planet is set
-    getRandSys(); 
+    getRandSys();
 }
 
 
@@ -229,7 +231,7 @@ class System {
     }
 
     // Instance of planet generation function
-    newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) { 
+    newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
         let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y);
         this.planets.push(p); // Add to instance of class planet list
     }
@@ -318,11 +320,11 @@ function animate() {
     let delta = timer - loopStart;
 
     // Update the randomly generated spacesips and loop over the traslation
-    for (let r = 0; r < spaceshipNo; r++) { 
+    for (let r = 0; r < spaceshipNo; r++) {
         if (typeof spaceships.children[r] !== "undefined") {
             if (delta < loopDuration)
                 spaceships.children[r].translateZ(paths[r]);
-                
+
             else {
                 spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
                 loopStart = Date.now();
@@ -391,18 +393,18 @@ function animate() {
         else { // Continuously update sensor data
             sensorImage.copy(figure);
             overlayText.innerHTML = "Distance: " + Math.round(intersects[0].distance) + " km";
-            
+
             // UUID of intersected object to classify the collision
-            let intersectUUID = intersects[0].object.uuid; 
+            let intersectUUID = intersects[0].object.uuid;
 
             if (Math.round(intersects[0].distance) < 40) { // Collision event
                 // Detection for inner control plane and UNDEF values
-                if (intersectUUID != planeUUID || intersectUUID == null) { 
+                if (intersectUUID != planeUUID || intersectUUID == null) {
                     collisionUUID = intersectUUID;
                     document.dispatchEvent(collideEvent);
                 }
             }
-            
+
             // Warning when the user approaches a dangerous object
             else if (Math.round(intersects[0].distance) > 40 && Math.round(intersects[0].distance) < 300) {
                 // Logical statements that allows the warning text to blink
@@ -434,7 +436,7 @@ function animate() {
         currentSpeed = 0;
     }
 
-    let final_speed = (currentSpeed * Math.PI) / 2000;
+    let final_speed = (Math.abs(currentSpeed) * Math.PI) / 2000;
 
     if (final_speed > Math.PI) {
         final_speed = Math.PI;
@@ -629,7 +631,7 @@ function createScene() {
         paths.push(z);
     }
     scene.add(spaceships);
-    
+
     let random_texture_index = 0;
 
     firstSystem = new System(); // First System
@@ -706,7 +708,7 @@ function createScene() {
     let planetC2 = addPlanet(400, 1200, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     thirdSystem.newPlanet(planetC2, 0, 0.01, 0.008, 0.01, 6, sun_c.position.x, sun_c.position.y);
     all_textures.splice(random_texture_index, 1);
-    
+
     random_texture_index = Math.round(Math.random() * 4);
     let planetC3 = addPlanet(120, 1400, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     thirdSystem.newPlanet(planetC3, 0, 0.01, 0.009, 0.01, 7, sun_c.position.x, sun_c.position.y);
