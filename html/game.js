@@ -33,7 +33,9 @@ let last_position = 0, current_position = 0;
 let line, pivot_line;
 let ring_y, ring_x, ring_z;
 
-let acceleration = 0.5;
+let acceleration = 0.2;
+let maxSpeed = 25;
+let currentSpeed = null;
 
 let arrow = null;
 let arrow_pv = new THREE.Object3D;
@@ -52,13 +54,35 @@ raycaster.far = 2000;
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
-    ySpeed = ySpeed + acceleration;
-    xSpeed = xSpeed + acceleration;
+
+    var direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    currentSpeed = ySpeed * 100;
+
     if (keyCode == 87) {
-        camera.position.y += ySpeed;
-    } else if (keyCode == 83) {
-        camera.position.y -= ySpeed;
-    } else if (keyCode == 65) {
+        if (ySpeed < maxSpeed) {
+            ySpeed = ySpeed + acceleration;
+
+        }
+        else if (ySpeed >= maxSpeed) {
+            ySpeed = maxSpeed
+        }
+
+        camera.position.add(direction.multiplyScalar(ySpeed));
+
+    }
+    else if (keyCode == 83) {
+
+        if (ySpeed < maxSpeed) {
+            ySpeed = ySpeed + acceleration;
+
+        }
+        else if (ySpeed >= maxSpeed) {
+            ySpeed = maxSpeed
+        }
+        camera.position.add(direction.multiplyScalar(ySpeed));
+    }
+    else if (keyCode == 65) {
         camera.position.x -= xSpeed;
     } else if (keyCode == 68) {
         camera.position.x += xSpeed;
@@ -69,13 +93,17 @@ function onDocumentKeyDown(event) {
 
 document.addEventListener("keyup", event => {
     if (event.isComposing || event.code === 229) {
-      return;
+        return;
     }
-    if(event.code == "KeyA" ||event.code == "KeyW" || event.code == "KeyS" || event.code == "KeyD"){
+    if (event.code == "KeyA" || event.code == "KeyW" || event.code == "KeyS" || event.code == "KeyD") {
         xSpeed = 0.001;
         ySpeed = 0.001;
         zSpeed = 0.001;
     }
+    if (event.code == "KeyW" || event.code == "KeyS") {
+        decreaseCounter();
+    }
+
 }, false);
 
 document.addEventListener("mousemove", onMouseMove, false);
@@ -93,6 +121,18 @@ function onCollision(event) {
     resetCamera();
     clock.stop();
     clock.start();
+
+}
+
+function decreaseCounter() {
+    setInterval(function () {
+        if (currentSpeed > 0) {
+            currentSpeed = currentSpeed - acceleration * 400;
+        }
+        if (currentSpeed < 0) {
+            currentSpeed = 0;
+        }
+    }, 200);
 
 }
 
@@ -164,7 +204,6 @@ class Planet {
         // Add planet to sun pivot point
         this.pivotSun.add(object);
 
-        console.log(this.object);
         // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
         // boundingBox.setFromObject(p.object);
         this.boundingBox = new THREE.BoxHelper(this.object, 0xffffff);
@@ -268,21 +307,16 @@ function animate() {
         planet.pivotSun.rotation.z += planet.sun_speed;
         planet.boundingBox.update();
     });
-    console.log("first asteroids");
-    console.log(firstAsteroids);
     //Asteroid rotation
-    firstAsteroids.children.forEach(asteroid =>
-        {
-            asteroid.rotation.z += 0.01;
-        });
-    secondAsteroids.children.forEach(asteroid =>
-        {
-            asteroid.rotation.z += 0.01;
-        });
-    thirdAsteroids.children.forEach(asteroid =>
-        {
-            asteroid.rotation.z += 0.01;
-        });
+    firstAsteroids.children.forEach(asteroid => {
+        asteroid.rotation.z += 0.01;
+    });
+    secondAsteroids.children.forEach(asteroid => {
+        asteroid.rotation.z += 0.01;
+    });
+    thirdAsteroids.children.forEach(asteroid => {
+        asteroid.rotation.z += 0.01;
+    });
 
     var randPlanetPos = new THREE.Vector3();
     randomPlanet.getWorldPosition(randPlanetPos);
@@ -337,8 +371,6 @@ function animate() {
     // else sensorImage = null;
     let minutes = Math.floor(Math.round(clock.elapsedTime) / 60);
 
-
-
     timeText.innerHTML = "Time: " + minutes + "m " + (Math.round(clock.elapsedTime) - (minutes * 60)) + "s";
 
 
@@ -347,6 +379,19 @@ function animate() {
         let sb = document.getElementById("scoreboard");
         sb.style.display = "none";
     }
+
+    if (currentSpeed == null) {
+        currentSpeed = 0;
+    }
+
+    let final_speed = (currentSpeed * Math.PI) / 2000;
+
+    if (final_speed > Math.PI) {
+        final_speed = Math.PI;
+    }
+    line.rotation.set(0, 0, -final_speed);
+    let speed_element = document.getElementById("speed");
+    speed_element.innerHTML = "Speed: " + Math.round(currentSpeed);
 
 
 
@@ -443,9 +488,9 @@ function createScene() {
 
 
     // Add arrow
-    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04};
+    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04 };
     loadObj(arrowURL, arrow_pv, 0, 0, 0);
-    arrow_pv.position.set(1.25,-.95,-5);
+    arrow_pv.position.set(1.25, -.95, -5);
     // arrow_pv.lookAt(0,0,0);
     camera.add(arrow_pv);
 
@@ -648,8 +693,7 @@ function createScene() {
 
     randomPlanet = getRandSys();
 
-     updateSpeed();
-     updateRotation();
+    updateRotation();
 }
 
 function timeSort(a, b) {
@@ -807,8 +851,8 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         PivotPoint.position.z = z;
         PivotPoint.position.x = x;
         PivotPoint.position.y = y;
-        if(texture)
-            PivotPoint.rotation.y = Math.floor(Math.random() * 360); 
+        if (texture)
+            PivotPoint.rotation.y = Math.floor(Math.random() * 360);
         objectList.add(PivotPoint);
     }
     catch (err) {
@@ -850,40 +894,15 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         PivotPoint.position.z = z;
         PivotPoint.position.x = x;
         PivotPoint.position.y = y;
-        if(texture)
-            PivotPoint.rotation.y = Math.floor(Math.random() * 360); 
+        if (texture)
+            PivotPoint.rotation.y = Math.floor(Math.random() * 360);
         objectList.add(PivotPoint);
     }
     catch (err) {
         return onError(err);
     }
 }
-function updateSpeed() {
-    let speed_x, speed_y, speed_z;
-    let last_position_x, last_position_y, last_position_z;
-    setInterval(function () {
-        speed_x = camera.position.x - last_position_x;
 
-        let final_speed = (speed_x * Math.PI)/2000;
-       
-        if(final_speed < 0){
-            final_speed = -final_speed;
-        }
-        if(final_speed > Math.PI){
-            final_speed = Math.PI;
-        }
-        line.rotation.set(0, 0, -final_speed);
-        let speed_element = document.getElementById("speed");
-        if(speed_x < 0){
-            speed_x = -speed_x;
-        }
-        speed_element.innerHTML = "Speed: " + Math.round(speed_x);
-
-        last_position_x = camera.position.x;
-        console.log("speed: "+final_speed);
-
-    }, 1000);
-}
 
 
 function updateRotation() {
@@ -903,12 +922,12 @@ function updateRotation() {
     }, 1000);
 }
 
-function getRandSys(){
+function getRandSys() {
 
-    var ranSystem = (Math.floor(Math.random()*3));
+    var ranSystem = (Math.floor(Math.random() * 3));
 
-    switch(ranSystem){
-        case 0: 
+    switch (ranSystem) {
+        case 0:
             var ranPlanet = firstSystem.planets[Math.floor(Math.random() * firstSystem.planets.length)];
             break;
         case 1:
