@@ -16,6 +16,7 @@ let firstSystem, secondSystem, thirdSystem;
 let firstAsteroids, secondAsteroids, thirdAsteroids;
 let duration = 5000;
 let currentTime = Date.now();
+let randomPlanetCopy = null;
 
 let spaceships = null;
 let paths = [];
@@ -78,7 +79,7 @@ function onDocumentKeyDown(event) {
     else if (keyCode == 83) {
 
         if (ySpeed < maxSpeed) {
-            ySpeed = ySpeed + acceleration;
+            ySpeed = ySpeed - acceleration;
 
         }
         else if (ySpeed >= maxSpeed) {
@@ -524,9 +525,9 @@ function createScene() {
 
 
     // Add arrow
-    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.04 };
+    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.02};
     loadObj(arrowURL, arrow_pv, 0, 0, 0);
-    arrow_pv.position.set(1.25, -.95, -5);
+    arrow_pv.position.set(0, .1, -5);
     // arrow_pv.lookAt(0,0,0);
     camera.add(arrow_pv);
 
@@ -728,6 +729,10 @@ function createScene() {
     scene.add(thirdAsteroids);
 
     randomPlanet = getRandSys();
+
+    randomPlanetCopy.scale.set(.005,.005,.005);
+    randomPlanetCopy.position.set(3.75, -3, -15);
+    camera.add(randomPlanetCopy);
 
     updateRotation();
 }
@@ -997,6 +1002,7 @@ function getRandSys() {
         default:
             break;
     }
+    randomPlanetCopy = ranPlanet.object.clone();
     return ranPlanet.object;
 }
 
