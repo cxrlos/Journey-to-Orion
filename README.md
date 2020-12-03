@@ -27,15 +27,15 @@ The libraries used for the development are the following:
 
 ## Development Path (requirements)
 1. Create the basic scene for the project; this will include the basic will include the basic illumination, camera and spaceship interior (dashboard).
-2. Spaceship movement using the keyboard and mouse combo.
+2. Spaceship movement using the keyboard AWSD and mouse for rotation.
 3. Environment generation: The environment will contain static planets with fixed rotation and translation values. These will be the same for every game but the starting point and goal will vary randomly.
-4. Random generation of "AI-controlled" spaceships and asteroids with variable directions, acceleration and rotation values.
-5. Collision system between the user and its surrounding objects. There will be an alert whenever an object approaches the user (minimum distance yet to be defined).
-6. Random assignation of goal planet with a visual indicator that stays on screen regardless of player
-7. Countdown to achieve mission (arrive at particular planet), and mission creation at random when simulation begins (displayed in a map). The countdown will also be relative to the linear distance between the objective and the user.
-8. Interior sensors inside spaceships which will display the user's spaceship rotation, velocity, and position values.
-9. Development of interactive dashboard that will show useful information of the asteroid, planet or spaceship that are closest to the user using raycasting
-10. Respawn system that restarts the game whenever the user dies due to a collision.
+4. Random generation of "AI-controlled" spaceships (random movement) and asteroids with varibale positions and rotation around random solar system.
+5. Collision system between the user and its surrounding objects. "You Lost" message that appears when colliding when any object. 
+6. Random assignation of target planet with a visual indicator that stays on screen regardless of player, arrow that points constantly to the target planet. 
+7. Countdown to achieve mission (arrive at particular planet), and mission creation at random when simulation begins (displayed as target planet in dashboard). Distance difference between target planet and user is also displayed in dashboard. 
+8. Interior sensors inside spaceships which will display the user's spaceship rotation and speed.
+9. Development of interactive dashboard that will show useful information of the asteroid, planet or spaceship that are closest to the user using raycasting (distance and plaent's picture).
+10. Respawn system that restarts the game in different positions,whenever the user dies due to a collision.
 
 
 ## How to Play
