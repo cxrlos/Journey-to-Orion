@@ -44,10 +44,10 @@ You spawn near a planet, and in your screen you will get a prompt for the first 
 ## Gameflow
 1. Initialize with inside spaceship PoV. 
 2. Movement options with keyboard (right, left, up or down) and rotation options with mouseGeneral Work-flow
-3. Update map position in dashboard to visualize mission completion status
-4. Warning alerts when approaching objects generated randomly. 
+3. Update speed, rotation, chronometer and distance to target in dashboard to visualize mission completion status
+4. Collidion with object: generates looser screen. 
 5. Mission Complete: displays sign when reaching target planet. 
-6. Display scoreboard and play again option. 
+6. Display scoreboard with current time in descending order. 
 
 ## Code Sections
 
