@@ -1,100 +1,120 @@
 /*------------------------------------------------------- game.js ---------
     |
-    |   Purpose: THREEJS program that emulates a solar system.
+    |   Purpose: This is aa THREE.js based game which allows you to fly among 
+    |       the celestial bodies with an objective planet in mind.
     |
-    |   Developer:  
+    |   Developers:  
     |       Carla Perez - https://github.com/CarlaPerezGavilan
     |       Carlos Garcia - https://github.com/cxrlos
     |       Juan Francisco Gortarez - https://github.com/Starfleet-Command
     |
     *--------------------------------------------------------------------*/
 
-// Declaration of all global variables
-let renderer = null, scene = null, camera = null;
-let asteroidBelt, figure;
-let firstSystem, secondSystem, thirdSystem;
-let firstAsteroids, secondAsteroids, thirdAsteroids;
-let duration = 5000;
+// Base global variables
 let currentTime = Date.now();
-let randomPlanetCopy = null;
+let loopStart = Date.now();
+let renderer = null, scene = null, camera = null;
 
-let spaceships = null;
-let paths = [];
-let scoreboard = [];
+// Static values which will dictate the game's behavior
+let duration = 5000;
+let acceleration = 0.2;
+let maxSpeed = 25;
 let lookSpeed = 0.05;
 let velocity = 0;
 let spaceshipNo = 20;
 let loopDuration = 20000;
-let loopStart = Date.now();
-let mouse = new THREE.Vector2();
-let sensorImage = null;
-let overlayText = null;
-let timeText = null;
-let alarmText = null;
-let last_position = 0, current_position = 0;
-let line, pivot_line;
-let ring_y, ring_x, ring_z;
-
-let planeUUID = null;
-let collisionUUID = null;
-
-let acceleration = 0.2;
-let maxSpeed = 25;
-let currentSpeed = null;
-
-let arrow = null;
-let arrow_pv = new THREE.Object3D;
-let randomPlanet = new THREE.Object3D;
-
 var xSpeed = 0.001;
 var ySpeed = 0.001;
 var zSpeed = 0.001;
 
+// Definition of global objects that will be used in different functions 
+// throughout the code
+let firstSystem, secondSystem, thirdSystem;
+let firstAsteroids, secondAsteroids, thirdAsteroids;
+let asteroidBelt, figure;
+let randomPlanetCopy = null;
+let spaceships = null;
+let currentSpeed = null;
+let sensorImage = null;
+let overlayText = null;
+let timeText = null;
+let alarmText = null;
+let arrow = null;
+let ring_y, ring_x, ring_z;
+let last_position = 0, current_position = 0;
+let line, pivot_line;
+let arrow_pv = new THREE.Object3D;
+let randomPlanet = new THREE.Object3D;
+let mouse = new THREE.Vector2();
+let paths = [];
+let scoreboard = [];
+
+// Specific object UUIDs used for collision detection and classification
+let planeUUID = null;
+let collisionUUID = null;
+
+// Raycaster related dwfinitions
 const clock = new THREE.Clock();
 const raycaster = new THREE.Raycaster();
 const collideEvent = new Event('collision');
 raycaster.near = 30;
 raycaster.far = 2000;
 
-document.addEventListener("keydown", onDocumentKeyDown, false);
+/*-------------------------------------------------------------------------
+    |
+    |   The following function allows the spaceship to move with the "WASD"
+    |   keys. It takes into account an acceleration value that will
+    |   increase the velocity of the spaceship until it reaches its maximum
+    |   value.
+    |
+    *--------------------------------------------------------------------*/
+
+// Waits for keypress
+document.addEventListener("keydown", onDocumentKeyDown, false); 
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
-
     var direction = new THREE.Vector3();
     camera.getWorldDirection(direction);
     currentSpeed = ySpeed * 100;
 
-    if (keyCode == 87) {
-        if (ySpeed < maxSpeed) {
+    if (keyCode == 87) { // Movement for W
+
+        if (ySpeed < maxSpeed) 
             ySpeed = ySpeed + acceleration;
 
-        }
-        else if (ySpeed >= maxSpeed) {
+        else if (ySpeed >= maxSpeed) 
             ySpeed = maxSpeed
-        }
 
         camera.position.add(direction.multiplyScalar(ySpeed));
 
-    }
-    else if (keyCode == 83) {
+    } else if (keyCode == 83) { // Movement for A
 
-        if (ySpeed < maxSpeed) {
+        if (ySpeed < maxSpeed) 
             ySpeed = ySpeed - acceleration;
 
-        }
-        else if (ySpeed >= maxSpeed) {
+        else if (ySpeed >= maxSpeed) 
             ySpeed = maxSpeed
-        }
+        
         camera.position.add(direction.multiplyScalar(ySpeed));
-    }
-    else if (keyCode == 65) {
+
+    } else if (keyCode == 65)  // Movement for S
         camera.position.x -= xSpeed;
-    } else if (keyCode == 68) {
+
+    else if (keyCode == 68)  // Movement for D
         camera.position.x += xSpeed;
-    } else if (keyCode == 32) {
+
+    else if (keyCode == 32)  // Reset camera using the Space key
         camera.position.set(0, 0, 0);
-    }
+    
 };
+
+
+/*-------------------------------------------------------------------------
+    |
+    |   Keyup listener to determine acceleration modification and function
+    |   that serves as a counter for the acceleration calculation.
+    |
+    *--------------------------------------------------------------------*/
 
 document.addEventListener("keyup", event => {
     if (event.isComposing || event.code === 229) {
@@ -108,35 +128,7 @@ document.addEventListener("keyup", event => {
     if (event.code == "KeyW" || event.code == "KeyS") {
         decreaseCounter();
     }
-
 }, false);
-
-document.addEventListener("mousemove", onMouseMove, false);
-function onMouseMove(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-}
-
-document.addEventListener('collision', onCollision, false);
-
-function onCollision(event) {
-
-    if (collisionUUID != randomPlanet.uuid) {
-        loserScene();
-        resetCamera();
-        clock.stop();
-        clock.start();
-    }
-
-    else {
-        scoreboardScene(clock.elapsedTime);
-        resetCamera();
-        clock.stop();
-        clock.start();
-    }
-
-}
 
 function decreaseCounter() {
     setInterval(function () {
@@ -150,8 +142,57 @@ function decreaseCounter() {
 
 }
 
+
+/*-------------------------------------------------------------------------
+    |
+    |   Listener and function for mouse movement.
+    |
+    *--------------------------------------------------------------------*/
+
+document.addEventListener("mousemove", onMouseMove, false);
+function onMouseMove(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+}
+
+
+/*-------------------------------------------------------------------------
+    |
+    |   Collision event listener and function to determine what to do in
+    |   case the player collides with an object. The objects are classified
+    |   by their respective UUID which is obtained during the execution.
+    |
+    *--------------------------------------------------------------------*/
+
+document.addEventListener('collision', onCollision, false);
+function onCollision(event) {
+
+    // In case it collides with an object different than the objective
+    if (collisionUUID != randomPlanet.uuid) {
+        loserScene();
+        resetCamera();
+    }
+
+    // In case it collides with the randomly assigned objective 
+    else {
+        scoreboardScene(clock.elapsedTime);
+        resetCamera();
+        clock.stop();
+        clock.start();
+    }
+
+}
+
+
+/*-------------------------------------------------------------------------
+    |
+    |   Helper function to reset the player's position to a given set of
+    |   locations.
+    |
+    *--------------------------------------------------------------------*/
+
 function resetCamera() {
-    locations = []
+    locations = [] // Storage for the pre-selected locations
     let loc1 = new THREE.Vector3(0, 0, 1000);
     locations.push(loc1);
     loc1 = new THREE.Vector3(1000, 5000, 1000);
@@ -165,38 +206,49 @@ function resetCamera() {
     loc1 = new THREE.Vector3(0, 600, 1000);
     locations.push(loc1);
 
-    getRandSys();
-
+    // Randomly pick a new location for the player
     selecter = Math.floor(Math.random() * 6);
     camera.position.copy(locations[selecter]);
 
-
+    // Given a camera reset, a new objective planet is set
+    getRandSys(); 
 }
 
-/**
- * System is a class that contains all planets, it is created at the begining so that
- * we can iterate all planets and update them
- * @constructor
- */
+
+/*-------------------------------------------------------------------------
+    |
+    |   Class that serves as a representation for a planetary system. It 
+    |   contains a list of planets as a constructor.
+    |
+    *--------------------------------------------------------------------*/
+
 class System {
     constructor() {
+        // Contains system's planets to easily iterate over them
         this.planets = [];
     }
-    newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
+
+    // Instance of planet generation function
+    newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) { 
         let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y);
-        this.planets.push(p);
+        this.planets.push(p); // Add to instance of class planet list
     }
 }
 
-/**
- * Planet is a class that constructs a planet with all of its necessary speeds and pivotPoints
- * @param object: the planet mesh
- * @param moons: number of moons this planet has
- * @param axis_speed: speed of rotation on its own axis
- * @param sun_speed: speed of rotation around the sun
- * @param moon_speed: speed of rotation of moons around planet
- * @param radius: planet's radius
- */
+
+/*-------------------------------------------------------------------------
+    |
+    |   Planet is a class that constructs a planet with all of its 
+    |   necessary speeds and pivotPoints.
+    |       @param object: the planet mesh
+    |       @param moons: number of moons this planet has
+    |       @param axis_speed: speed of rotation on its own axis
+    |       @param sun_speed: speed of rotation around the sun
+    |       @param moon_speed: speed of rotation of moons around planet
+    |       @param radius: planet's radius
+    |
+    *--------------------------------------------------------------------*/
+
 class Planet {
     constructor(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
         // Create an empty object of type all and
@@ -211,14 +263,6 @@ class Planet {
 
         // Add planet to sun pivot point
         this.pivotSun.add(object);
-
-        // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-        // boundingBox.setFromObject(p.object);
-        // this.boundingBox = new THREE.BoxHelper(this.object, 0xffffff);
-        // this.boundingBox.update();
-        // this.boundingBox.visible = true;
-        // helper.visible = false;
-        // scene.add(this.boundingBox);
 
         // Add all other objects to pivotSun
         this.pivotSun.add(this.all);
@@ -260,67 +304,54 @@ class Planet {
     }
 }
 
-/**
- * ANIMATE: Updates scene every delta time
- */
+
+/*-------------------------------------------------------------------------
+    |
+    |   Function that updates different values every delta time.
+    |
+    *--------------------------------------------------------------------*/
 
 function animate() {
-    // Update scene controls
-    controls.update(clock.getDelta());
-
-    //let player - new THREE.Vector3(camera.position);
+    controls.update(clock.getDelta()); // Update scene controls
 
     let timer = Date.now();
     let delta = timer - loopStart;
 
-    for (let r = 0; r < spaceshipNo; r++) {
+    // Update the randomly generated spacesips and loop over the traslation
+    for (let r = 0; r < spaceshipNo; r++) { 
         if (typeof spaceships.children[r] !== "undefined") {
-            if (delta < loopDuration) {
+            if (delta < loopDuration)
                 spaceships.children[r].translateZ(paths[r]);
-            } else {
+                
+            else {
                 spaceships.children[r].rotation.y = Math.floor(Math.random() * 360);
-                //paths[r] = -paths[r];	
                 loopStart = Date.now();
             }
         }
     }
 
     // FirstSystem: Update all planets in planet array
-    firstSystem.planets.forEach((planet, index) => {
-        // Update rotation of planet on its own speed (axis rotation)
-        planet.object.rotation.z += planet.axis_speed;
-        // Update rotation of moons around planet (moon rotation)
-        planet.privotCenter.rotation.z += planet.moon_speed;
-        // Update rotation of planet around sun (orbital rotation)
-        planet.pivotSun.rotation.z += planet.sun_speed;
-        // planet.boundingBox.update();
-        // boxCollision = planet.collisionObj.containsPoint(player);
-        // if(boxCollision)
-        //     document.dispatchEvent(collideEvent);
+    firstSystem.planets.forEach(planet => {
+        planet.object.rotation.z += planet.axis_speed; // Planet axial rotation
+        planet.privotCenter.rotation.z += planet.moon_speed; // Moon rotation
+        planet.pivotSun.rotation.z += planet.sun_speed; // Traslation
     });
 
     // SecondSystem: Update all planets in planet array
     secondSystem.planets.forEach(planet => {
-        // Update rotation of planet on its own speed (axis rotation)
-        planet.object.rotation.z += planet.axis_speed;
-        // Update rotation of moons around planet (moon rotation)
-        planet.privotCenter.rotation.z += planet.moon_speed;
-        // Update rotation of planet around sun (orbital rotation)
-        planet.pivotSun.rotation.z += planet.sun_speed;
-        // planet.boundingBox.update();
+        planet.object.rotation.z += planet.axis_speed; // Planet axial rotation
+        planet.privotCenter.rotation.z += planet.moon_speed; // Moon rotation
+        planet.pivotSun.rotation.z += planet.sun_speed; // Traslation
     });
 
     // ThirdSystem: Update all planets in planet array
     thirdSystem.planets.forEach(planet => {
-        // Update rotation of planet on its own speed (axis rotation)
-        planet.object.rotation.z += planet.axis_speed;
-        // Update rotation of moons around planet (moon rotation)
-        planet.privotCenter.rotation.z += planet.moon_speed;
-        // Update rotation of planet around sun (orbital rotation)
-        planet.pivotSun.rotation.z += planet.sun_speed;
-        // planet.boundingBox.update();
+        planet.object.rotation.z += planet.axis_speed; // Planet axial rotation
+        planet.privotCenter.rotation.z += planet.moon_speed; // Moon rotation
+        planet.pivotSun.rotation.z += planet.sun_speed; // Traslation
     });
-    //Asteroid rotation
+
+    //Asteroid system transformations
     firstAsteroids.children.forEach(asteroid => {
         asteroid.rotation.z += 0.01;
     });
@@ -331,74 +362,68 @@ function animate() {
         asteroid.rotation.z += 0.01;
     });
 
+    // Calculate the objective planet position to update the guiding arrow 
+    // rotation value.
     var randPlanetPos = new THREE.Vector3();
     randomPlanet.getWorldPosition(randPlanetPos);
     arrow_pv.lookAt(randPlanetPos);
 
-    //establish origin and direction for raycaster
+    // Establish origin and direction for raycaster
     raycaster.setFromCamera(mouse, camera);
 
-    //detect which (if any) elements are in the raycaster's line of sight
+    // Detect which (if any) elements are in the raycaster's line of sight
     let intersects = raycaster.intersectObjects(scene.children, true);
 
-    // if any one is found, show it. 
-    if (typeof intersects[0] !== "undefined") {
+    if (typeof intersects[0] !== "undefined") { // If any one is found, show it 
         let figure = intersects[0].object.clone();
 
-        if (figure.geometry.type == "SphereGeometry") {
+        if (figure.geometry.type == "SphereGeometry") { // Scaling for planet
             figure.scale.set(0.005, 0.005, 0.005);
         }
 
-        else figure.scale.set(0.01, 0.01, 0.01);
+        else figure.scale.set(0.01, 0.01, 0.01); // Scaling for spaceships
         figure.position.set(0, -3, -15);
 
-        //if nothing is on the sensor, add the intersected item
-        if (sensorImage == null) {
-
+        if (sensorImage == null) { // If nothing is on the sensor, add the intersected item
             sensorImage = figure;
             camera.add(figure);
-
-
         }
-        //continuously update sensor data
-        else {
+        else { // Continuously update sensor data
             sensorImage.copy(figure);
             overlayText.innerHTML = "Distance: " + Math.round(intersects[0].distance) + " km";
+            
+            // UUID of intersected object to classify the collision
+            let intersectUUID = intersects[0].object.uuid; 
 
-            let intersectUUID = intersects[0].object.uuid;
-
-            //Collision placeholder
-            if (Math.round(intersects[0].distance) < 40) {
-                if (intersectUUID != planeUUID || intersectUUID == null) {
+            if (Math.round(intersects[0].distance) < 40) { // Collision event
+                // Detection for inner control plane and UNDEF values
+                if (intersectUUID != planeUUID || intersectUUID == null) { 
                     collisionUUID = intersectUUID;
                     document.dispatchEvent(collideEvent);
                 }
             }
+            
+            // Warning when the user approaches a dangerous object
             else if (Math.round(intersects[0].distance) > 40 && Math.round(intersects[0].distance) < 300) {
+                // Logical statements that allows the warning text to blink
                 if (randomPlanet.uuid != intersects[0].object.uuid) {
                     if (Math.floor(clock.elapsedTime) % 2 == 0) {
                         alarmText.style.display = "block"
-
-                    }
-                    else {
+                    } else {
                         alarmText.style.display = "none"
                     }
-
                 }
-
-            }
-            else {
+            } else {
                 alarmText.style.display = "none"
             }
         }
-
     }
-    // else sensorImage = null;
+
+    // From this line and until the end of the function, there are self-
+    // explanatory calculations that have the purpose of displaying useful
+    // values in the user's control pane
     let minutes = Math.floor(Math.round(clock.elapsedTime) / 60);
-
     timeText.innerHTML = "Time: " + minutes + "m " + (Math.round(clock.elapsedTime) - (minutes * 60)) + "s";
-
-
 
     if (clock.elapsedTime > 5) {
         let sb = document.getElementById("scoreboard");
@@ -417,27 +442,27 @@ function animate() {
     line.rotation.set(0, 0, -final_speed);
     let speed_element = document.getElementById("speed");
     speed_element.innerHTML = "Speed: " + Math.abs(Math.round(currentSpeed));
-
-
-
-
 }
 
-/**
- * RUN: it renders scene and camera, calls animate
- */
+
+/*-------------------------------------------------------------------------
+    |
+    |   Function that renders scene and camera, calls animate.
+    |
+    *--------------------------------------------------------------------*/
+
 function run() {
     requestAnimationFrame(function () { run(); });
-
-    // Render the scene
-    renderer.render(scene, camera);
-    // Update rotations calling animate
-    animate();
+    renderer.render(scene, camera); // Render the scene
+    animate(); // Update rotations calling animate
 }
 
-/**
- * createScene: Initializes all objects on the scene before any updates
- */
+
+/*-------------------------------------------------------------------------
+    |
+    |   Initializes all objects on the scene before any updates.
+    |
+    *--------------------------------------------------------------------*/
 
 function createScene() {
     // Creation of renderer and setting size to browser window size
@@ -464,8 +489,6 @@ function createScene() {
 
     // Initialize camara position on top of solar system
     camera.position.set(0, 0, 1000);
-    // resetCamera();
-
     controls.update(clock.getDelta());
 
     // Add camara to scene
@@ -489,7 +512,7 @@ function createScene() {
     //Adding pointlight to sceen 
     scene.add(pointLight);
 
-    {
+    { // Skybox pane definition for loading
         const loader = new THREE.CubeTextureLoader();
         const texture = loader.load([
             '../textures/skybox/corona_ft.png',
@@ -502,7 +525,7 @@ function createScene() {
         scene.background = texture;
     }
 
-    //Create spaceship interior and add it as a child of the camera.
+    //Create spaceship interior and add it as a child of the camera
     let plane_geometry = new THREE.PlaneGeometry(35, 20, 32);
     textureMap = new THREE.TextureLoader().load("../textures/cockpit/dashboard.png");
     let plane_material = new THREE.MeshBasicMaterial({ map: textureMap, transparent: true, side: THREE.DoubleSide });
@@ -513,7 +536,7 @@ function createScene() {
     camera.add(plane);
 
 
-    // Add arrow
+    // Add arrow that will serve as a pointer towards the objective planet
     let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.02 };
     loadObj(arrowURL, arrow_pv, 0, 0, 0);
     arrow_pv.position.set(0, .1, -5);
@@ -599,21 +622,17 @@ function createScene() {
     let objModelUrl = { obj: '../models/spaceships/luminaris/Luminaris.obj', map: '../models/spaceships/viper/face.jpg', scale: 0.4 };
     let lowerLimit = [0, 0, 0];
     let upperLimit = [2000, 2000, 2000];
-
     spaceshipMultigen(objModelUrl, spaceshipNo, lowerLimit, upperLimit);
 
     for (let i = 0; i < spaceshipNo; i++) {
         let z = Math.random();
-
         paths.push(z);
     }
-
-    //genSpaceship(objModelUrl, spaceships, 60, 60, 40);
     scene.add(spaceships);
-
+    
     let random_texture_index = 0;
-    // First System
-    firstSystem = new System();
+
+    firstSystem = new System(); // First System
 
     // Sun First System addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
     let sun_a = addPlanet(180, 0, 0, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
@@ -634,15 +653,13 @@ function createScene() {
     firstSystem.newPlanet(planetA3, 0, 0.01, 0.009, 0.01, 7, sun_a.position.x, sun_a.position.y);
     all_textures.splice(random_texture_index, 1);
 
-
     random_texture_index = Math.round(Math.random() * 12);
     let planetA4 = addPlanet(110, 1800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA4, 0, 0.01, 0.005, 0.02, 6, sun_a.position.x, sun_a.position.y);
     all_textures.splice(random_texture_index, 1);
 
 
-    //  Second System
-    secondSystem = new System();
+    secondSystem = new System(); // Second System
 
     // Seocnd System Sun  addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
     let sun_b = addPlanet(200, 1000, 5000, "../models/planets/inhospitable/Venusian.png", 1, 0, "");
@@ -673,8 +690,8 @@ function createScene() {
     secondSystem.newPlanet(planetB5, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
     all_textures.splice(random_texture_index, 1);
 
-    //  Second System
-    thirdSystem = new System();
+
+    thirdSystem = new System(); // Third System
 
     // Second System Sun  addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap)
     let sun_c = addPlanet(400, -7000, -3000, "../models/planets/inhospitable/Volcanic.png", 1, 0, "");
@@ -689,7 +706,7 @@ function createScene() {
     let planetC2 = addPlanet(400, 1200, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     thirdSystem.newPlanet(planetC2, 0, 0.01, 0.008, 0.01, 6, sun_c.position.x, sun_c.position.y);
     all_textures.splice(random_texture_index, 1);
-
+    
     random_texture_index = Math.round(Math.random() * 4);
     let planetC3 = addPlanet(120, 1400, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     thirdSystem.newPlanet(planetC3, 0, 0.01, 0.009, 0.01, 7, sun_c.position.x, sun_c.position.y);
@@ -700,7 +717,7 @@ function createScene() {
     thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
     all_textures.splice(random_texture_index, 1);
 
-
+    // Asteroid generation
     firstAsteroids = new THREE.Object3D;
     secondAsteroids = new THREE.Object3D;
     thirdAsteroids = new THREE.Object3D;
@@ -716,17 +733,31 @@ function createScene() {
     thirdAsteroids.position.set(sun_c.position.x, sun_c.position.y, 0);
     scene.add(thirdAsteroids);
 
+    // Random planet assignation
     randomPlanet = getRandSys();
-
     camera.add(randomPlanetCopy);
 
     updateRotation();
 }
 
+
+/*-------------------------------------------------------------------------
+    |
+    |   Simple function that ranks the successful missions by time
+    |
+    *--------------------------------------------------------------------*/
+
 function timeSort(a, b) {
     return a - b;
 }
 
+
+/*-------------------------------------------------------------------------
+    |
+    |   Display of the loser scene for when the user collides with an
+    |   object that's not the objective.
+    |
+    *--------------------------------------------------------------------*/
 
 function loserScene() {
     // Creation of renderer and setting size to browser window size
@@ -748,6 +779,14 @@ function loserScene() {
     sb.style.display = "block";
 
 }
+
+
+/*-------------------------------------------------------------------------
+    |
+    |   Display of the winner scene for when the user collides with the
+    |   objective.
+    |
+    *--------------------------------------------------------------------*/
 
 function scoreboardScene(time) {
     // Creation of renderer and setting size to browser window size
@@ -774,7 +813,11 @@ function scoreboardScene(time) {
 }
 
 
-//sb.style.display = "none";
+/*-------------------------------------------------------------------------
+    |
+    |   Function that generates asteroids with a random position.
+    |
+    *--------------------------------------------------------------------*/
 
 function generateRandom(max_pos, min_pos) {
     setInterval(function () {
@@ -797,14 +840,19 @@ function generateRandom(max_pos, min_pos) {
 }
 
 
-/**
- * Creates x amount of spaceship objects at the specified x,y,z coordinates	
- * @param objModelUrl: an object with the .obj url and the .jpg/.png texture
- * @param number amount of spaceships to generate
- * @param lowerLimit array of size 3 that contains the x,y,z coordinates (in that order) of the lower limit
- * @param upperLimit array of size 3 that contains the x,y,z coordinates (in that order) of the upper limit
- * 
-**/
+/*-------------------------------------------------------------------------
+    |
+    |   Creates x amount of spaceship objects at the specified x,y,z 
+    |   coordinates	
+    |       @param objModelUrl: an object with the .obj url and the 
+    |          .jpg/.png texture
+    |       @param number amount of spaceships to generate
+    |       @param lowerLimit array of size 3 that contains the x,y,z 
+    |           coordinates (in that order) of the lower limit
+    |       @param upperLimit array of size 3 that contains the x,y,z 
+    |           coordinates (in that order) of the upper limit
+    |
+    *--------------------------------------------------------------------*/
 function spaceshipMultigen(objModelUrl, number, lowerLimit, upperLimit) {
     var x, y, z;
     for (let index = 0; index < number; index++) {
@@ -817,19 +865,15 @@ function spaceshipMultigen(objModelUrl, number, lowerLimit, upperLimit) {
 }
 
 
-/**	   
- * Creates a spaceship object at the specified x,y,z coordinates
- * @param objModelUrl: an object with the .obj url and the .jpg/.png texture
- * @param objectList: the master object that will contain the spaceship 
- *
-**/
-function genSpaceship(objModelUrl, objectList, x, y, z) {
-    loadObj(objModelUrl, objectList, x, y, z);
-}
+/*-------------------------------------------------------------------------
+    |
+    |   Function that calls the different THREE.js functions required to
+    |   create a sphere object representing a planet.
+    |
+    *--------------------------------------------------------------------*/
 
 function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
-    // Load texture map
-    textureMap = new THREE.TextureLoader().load(mapUrl);
+    textureMap = new THREE.TextureLoader().load(mapUrl); // Load texture map 
 
     if (mat == 0) {
         if (haveBump == 1) {
@@ -852,17 +896,19 @@ function addPlanet(radius, x, y, mapUrl, mat, haveBump, bumpMap) {
     return figure;
 }
 
-function promisifyLoader(loader, onProgress) {
-    function promiseLoader(url) {
-        return new Promise((resolve, reject) => {
-            loader.load(url, resolve, onProgress, reject);
-        });
-    }
 
-    return {
-        originalLoader: loader,
-        load: promiseLoader,
-    };
+/*-------------------------------------------------------------------------
+    |
+    |   Creates a spaceship object at the specified x,y,z coordinates.
+    |       @param objModelUrl: an object with the .obj url and the 
+    |           .jpg/.png texture
+    |       @param objectList: the master object that will contain the 
+    |           spaceship 
+    |
+    *--------------------------------------------------------------------*/
+
+function genSpaceship(objModelUrl, objectList, x, y, z) {
+    loadObj(objModelUrl, objectList, x, y, z);
 }
 
 const onError = ((err) => { console.error(err); });
@@ -910,6 +956,27 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
 }
 
 
+function promisifyLoader(loader, onProgress) {
+    function promiseLoader(url) {
+        return new Promise((resolve, reject) => {
+            loader.load(url, resolve, onProgress, reject);
+        });
+    }
+
+    return {
+        originalLoader: loader,
+        load: promiseLoader,
+    };
+}
+
+
+/*-------------------------------------------------------------------------
+    |
+    |   .obj loader function mainly inspired from the one seen on the 
+    |   classroom examples.
+    |
+    *--------------------------------------------------------------------*/
+
 async function loadObj(objModelUrl, objectList, x, y, z) {
     const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());
     try {
@@ -943,6 +1010,9 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         PivotPoint.position.z = z;
         PivotPoint.position.x = x;
         PivotPoint.position.y = y;
+
+        // As we re-used the function for thr arrow generation, it is the 
+        // simplest way to avoid rotation in this object
         if (texture)
             PivotPoint.rotation.y = Math.floor(Math.random() * 360);
         objectList.add(PivotPoint);
@@ -953,6 +1023,12 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
 }
 
 
+/*-------------------------------------------------------------------------
+    |
+    |   Function that calculates the spaceship rotation to feed the gyro
+    |   with the updated rotation data.
+    |
+    *--------------------------------------------------------------------*/
 
 function updateRotation() {
     setInterval(function () {
@@ -971,11 +1047,18 @@ function updateRotation() {
     }, 1000);
 }
 
+
+/*-------------------------------------------------------------------------
+    |
+    |   Returns a random planet object from a random system, used to 
+    |   generate random objective.
+    |
+    *--------------------------------------------------------------------*/
+
 function getRandSys() {
+    var ranSystem = (Math.floor(Math.random() * 3)); // Select between three systems
 
-    var ranSystem = (Math.floor(Math.random() * 3));
-
-    switch (ranSystem) {
+    switch (ranSystem) { // Select a random planet from a given random system index
         case 0:
             var ranPlanet = firstSystem.planets[Math.floor(Math.random() * firstSystem.planets.length)];
             break;
@@ -988,21 +1071,17 @@ function getRandSys() {
         default:
             break;
     }
-    let figure = ranPlanet.object.clone();
+    let figure = ranPlanet.object.clone(); // Used to copy it to the dashboard
 
+    // Positions the copy on the dashboard to visualize it
     figure.scale.set(.005, .005, .005);
     figure.position.set(3.75, -3, -15);
     if (randomPlanetCopy == null) {
         randomPlanetCopy = figure;
         camera.add(figure);
-
-    }
-    else {
+    } else {
         randomPlanetCopy.copy(figure);
-
     }
-    console.log(figure);
-
     return ranPlanet.object;
 }
 
