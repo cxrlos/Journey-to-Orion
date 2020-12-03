@@ -29,6 +29,7 @@ let mouse = new THREE.Vector2();
 let sensorImage = null;
 let overlayText = null;
 let timeText = null;
+let alarmText = null;
 let last_position = 0, current_position = 0;
 let line, pivot_line;
 let ring_y, ring_x, ring_z;
@@ -373,14 +374,31 @@ function animate() {
             // console.log(intersects[0].object.uuid);
             // console.log(randomPlanet.uuid);
             // console.log(planeUUID);
-            let intersectUUID = intersects[0].uuid;
+            let intersectUUID = intersects[0].object.uuid;
 
             //Collision placeholder
             if (Math.round(intersects[0].distance) < 40) {
-                if(intersectUUID != planeUUID || intersectUUID == null){
+                if (intersectUUID != planeUUID || intersectUUID == null) {
                     collisionUUID = intersectUUID;
                     document.dispatchEvent(collideEvent);
                 }
+            }
+            else if (Math.round(intersects[0].distance) > 40 && Math.round(intersects[0].distance) < 300) {
+                if (randomPlanet.uuid != intersects[0].object.uuid) {
+                    console.log(clock.elapsedTime % 2 == 0)
+                    if (Math.floor(clock.elapsedTime) % 2 == 0) {
+                        alarmText.style.display = "block"
+
+                    }
+                    else {
+                        alarmText.style.display = "none"
+                    }
+
+                }
+
+            }
+            else {
+                alarmText.style.display = "none"
             }
         }
 
@@ -438,7 +456,7 @@ function createScene() {
     document.body.appendChild(renderer.domElement);
     overlayText = document.getElementById("distance");
     timeText = document.getElementById("chrono");
-
+    alarmText = document.getElementById("warning");
 
     // Create scene object
     scene = new THREE.Scene();
