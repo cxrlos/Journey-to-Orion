@@ -15,7 +15,9 @@
 ## Description
 Journey to Orion is a Space Exploration Simulator that puts you in the cockpit of a small spaceship in a big galaxy! Explore a vast 3D system with procedurally generated planets, ships, and asteroids, and attempt to reach different planets while keeping yourself safe from obstacles and avoiding collisions with tiny and not-so-tiny balls of rock. 
 
-![J20](menu.png){height=200 width=250px}
+<div>
+<img src="menu.png" width="250" height="150"/>
+</div>
 
 ## Dependencies
 The libraries used for the development are the following:
