@@ -22,7 +22,7 @@ let spaceships = null;
 let paths = [];
 let scoreboard = [];
 let lookSpeed = 0.05;
-let velocity = 150;
+let velocity = 0;
 let spaceshipNo = 20;
 let loopDuration = 20000;
 let loopStart = Date.now();
@@ -164,6 +164,8 @@ function resetCamera() {
     locations.push(loc1);
     loc1 = new THREE.Vector3(0, 600, 1000);
     locations.push(loc1);
+
+    getRandSys();
 
     selecter = Math.floor(Math.random() * 6);
     camera.position.copy(locations[selecter]);
@@ -352,15 +354,6 @@ function animate() {
 
         //if nothing is on the sensor, add the intersected item
         if (sensorImage == null) {
-            // camera.children.forEach(element => {
-
-
-            //     element.geometry.dispose();
-            //     element.material.dispose();
-            //     scene.remove(element);
-
-            // });
-            // renderer.renderLists.dispose();
 
             sensorImage = figure;
             camera.add(figure);
@@ -372,9 +365,6 @@ function animate() {
             sensorImage.copy(figure);
             overlayText.innerHTML = "Distance: " + Math.round(intersects[0].distance) + " km";
 
-            // console.log(intersects[0].object.uuid);
-            // console.log(randomPlanet.uuid);
-            // console.log(planeUUID);
             let intersectUUID = intersects[0].object.uuid;
 
             //Collision placeholder
@@ -386,7 +376,6 @@ function animate() {
             }
             else if (Math.round(intersects[0].distance) > 40 && Math.round(intersects[0].distance) < 300) {
                 if (randomPlanet.uuid != intersects[0].object.uuid) {
-                    console.log(clock.elapsedTime % 2 == 0)
                     if (Math.floor(clock.elapsedTime) % 2 == 0) {
                         alarmText.style.display = "block"
 
@@ -427,7 +416,7 @@ function animate() {
     }
     line.rotation.set(0, 0, -final_speed);
     let speed_element = document.getElementById("speed");
-    speed_element.innerHTML = "Speed: " + Math.round(currentSpeed);
+    speed_element.innerHTML = "Speed: " + Math.abs(Math.round(currentSpeed));
 
 
 
@@ -525,10 +514,9 @@ function createScene() {
 
 
     // Add arrow
-    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.02};
+    let arrowURL = { obj: '../models/arrow/arrow.obj', scale: 0.02 };
     loadObj(arrowURL, arrow_pv, 0, 0, 0);
     arrow_pv.position.set(0, .1, -5);
-    // arrow_pv.lookAt(0,0,0);
     camera.add(arrow_pv);
 
     //Add speedometer
@@ -543,7 +531,7 @@ function createScene() {
 
     //Speedometer pointer 
     const material = new THREE.LineBasicMaterial({
-        color: 0x0000ff
+        color: 0x00FFFF
     });
 
     const points = [];
@@ -730,8 +718,6 @@ function createScene() {
 
     randomPlanet = getRandSys();
 
-    randomPlanetCopy.scale.set(.005,.005,.005);
-    randomPlanetCopy.position.set(3.75, -3, -15);
     camera.add(randomPlanetCopy);
 
     updateRotation();
@@ -1002,7 +988,21 @@ function getRandSys() {
         default:
             break;
     }
-    randomPlanetCopy = ranPlanet.object.clone();
+    let figure = ranPlanet.object.clone();
+
+    figure.scale.set(.005, .005, .005);
+    figure.position.set(3.75, -3, -15);
+    if (randomPlanetCopy == null) {
+        randomPlanetCopy = figure;
+        camera.add(figure);
+
+    }
+    else {
+        randomPlanetCopy.copy(figure);
+
+    }
+    console.log(figure);
+
     return ranPlanet.object;
 }
 
