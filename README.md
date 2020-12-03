@@ -9,8 +9,13 @@
 - [Carlos García](https://github.com/cxrlos)
 - [Juan Francisco Gortarez](https://github.com/)
 
+## Link to Project:
+[here](http://journey2orion.ga/game/)
+
 ## Description
 Journey to Orion is a Space Exploration Simulator that puts you in the cockpit of a small spaceship in a big galaxy! Explore a vast 3D system with procedurally generated planets, ships, and asteroids, and attempt to reach different planets while keeping yourself safe from obstacles and avoiding collisions with tiny and not-so-tiny balls of rock. 
+
+![J20](menu.png)
 
 ## Dependencies
 The libraries used for the development are the following:
@@ -76,16 +81,26 @@ This helper function is used to load a .obj object, create a 3d object, and assi
 ### 10. ScoreboardScene
 This function helps control the scoreboard toggle, and it updates the board depending on the stats for your current run. 
 
-## Work Plan
-- [TRELLO PLAN](https://trello.com/b/zfwuQ9vi)
+### 11. getRandSys 
+Returns random planet from a random solar system (3 options available). 
 
-### Global Variables
-```javascript
-let mult;
-let translations = {};
-let rotations = {};
-let object_array = [];          
-```
+### 12. generateRandom 
+Generates asteroids every 20 seconds in random positions that rotate around a sun of one of the three main solar systems. 
+
+### 13. decreaseCounter 
+It updates speed according to acceleration, if it is negative it is set to 0. If it is bigger than 0 it is decreased by the acceleration times 400 factor. 
+
+### 14. resetCamera 
+Select from 6 random positions to respawn camera once reached destination or everytime page is refreshed. 
+
+### 15. timeSort 
+Returns time difference between two moments in time, to determine absolute duration of journey. 
+
+### 16. loserScene
+Scene that appears when colliding with an asteroid, planet or spaceship. 
+
+## Work Plan
+- [TRELLO PLAN](https://trello.com/b/zfwuQ9vi)    
 
 ## License
 The license information can be reviewed in the [LICENSE](https://github.com/cxrlos/Journey_to_Orion/blob/master/LICENSE) file.

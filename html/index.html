@@ -8,61 +8,76 @@
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap" rel="stylesheet">
 <style>
-body,h1,h5 {font-family: "Raleway", sans-serif}
-body, html {height: 100%}
-.bgimg {
-  background-image: url('../textures/bg_menu/stars.jpg');
-  min-height: 100%;
-  background-position: center;
-  background-size: cover;
-}
+  body,
+  h1,
+  h5 {
+    font-family: "Raleway", sans-serif
+  }
+
+  body,
+  html {
+    height: 100%
+  }
+
+  .bgimg {
+    background-image: url('../textures/bg_menu/stars.jpg');
+    min-height: 100%;
+    background-position: center;
+    background-size: cover;
+  }
 </style>
+
 <body>
 
-<div class="bgimg w3-display-container w3-text-white">
-  <div class="w3-display-middle w3-jumbo">
-    <p style= "text-align:center; font-family: 'Major Mono Display', monospace;">journey to orion</p>
-    <div style = "padding-left: 30%"class="w3-display w3-container w3-xlarge">
-        <p><button style="width:200px" onclick="location.href = 'game.html'" class="w3-button w3-black">Play!</button></p>
-        <p><button style="width:200px" onclick="document.getElementById('how').style.display='block'" class="w3-button w3-black">How to Play?</button></p>    
+  <div class="bgimg w3-display-container w3-text-white">
+    <div class="w3-display-middle w3-jumbo">
+      <p style="text-align:center; font-family: 'Major Mono Display', monospace;">journey to orion</p>
+      <div style="padding-left: 30%" class="w3-display w3-container w3-xlarge">
+        <p><button style="width:200px" onclick="location.href = 'game.html'" class="w3-button w3-black">Play!</button>
+        </p>
+        <p><button style="width:200px" onclick="document.getElementById('how').style.display='block'"
+            class="w3-button w3-black">How to Play?</button></p>
+      </div>
+
     </div>
 
-  </div>
-  
-  <div class="w3-display-bottomleft w3-container">
-    <p class="w3-xlarge">Gráficas Computacionales</p>
-    <p class="w3-large">Carla Pérez Gavilán A01023033</p>
-    <p class="w3-large">Carlos García González A0105948</p>
-    <p class="w3-large">Juan Francisco Gortarez A01021926</p>
-    <p> <a href="https://github.com/cxrlos/Journey_to_Orion" target="_blank">Github Código</a></p>
-  </div>
-</div>
-
-<!-- Menu Modal -->
-<div id="how" class="w3-modal">
-  <div class="w3-modal-content w3-animate-zoom">
-    <div class="w3-container w3-black w3-display-container">
-      <span onclick="document.getElementById('how').style.display='none'" class="w3-button w3-display-topright w3-large">x</span>
-      <h1>How to Play?</h1>
+    <div class="w3-display-bottomleft w3-container">
+      <p class="w3-xlarge">Gráficas Computacionales</p>
+      <p class="w3-large">Carla Pérez Gavilán A01023033</p>
+      <p class="w3-large">Carlos García González A0105948</p>
+      <p class="w3-large">Juan Francisco Gortarez A01021926</p>
+      <p> <a href="https://github.com/cxrlos/Journey_to_Orion" target="_blank">Github Código</a></p>
     </div>
-    <div class="w3-container">
+  </div>
+
+  <!-- Menu Modal -->
+  <div id="how" class="w3-modal">
+    <div class="w3-modal-content w3-animate-zoom">
+      <div class="w3-container w3-black w3-display-container">
+        <span onclick="document.getElementById('how').style.display='none'"
+          class="w3-button w3-display-topright w3-large">x</span>
+        <h1>How to Play?</h1>
+      </div>
+      <div class="w3-container">
         <h3>1</h3>
-      <h5> Muévete a través del espacio con el mouse o con los controles AWSD </h5>
-      <img src="../textures/bg_menu/arrow.jpg" width="20%" height="20%"  alt="arrow_controls">
-      <img src="../textures/bg_menu/mouse.png" width="20%" height="20%"  alt="arrow_controls">
-      <h3>2</h3>
-      <h5> Pero ten cuidado con los asteroides, naves y planetas </h5>
-      <img src="../textures/bg_menu/asteroid.webp" width="20%" height="20%"  alt="arrow_controls">
-      <h3>3</h3><h5> Tu objetivo, encontrar el planeta indicado por la flecha en el centro del dashboard, en el menor tiempo posible.  </h5>
-      <img src="../textures/bg_menu/spaceship.png" width="20%" height="20%"  alt="arrow_controls">
+        <h5> Muévete a través del espacio con el mouse o con los controles AWSD </h5>
+        <img src="../textures/bg_menu/arrow.jpg" width="20%" height="20%" alt="arrow_controls">
+        <img src="../textures/bg_menu/mouse.png" width="20%" height="20%" alt="arrow_controls">
+        <h3>2</h3>
+        <h5> Pero ten cuidado con los asteroides, naves y planetas </h5>
+        <img src="../textures/bg_menu/asteroid.webp" width="20%" height="20%" alt="arrow_controls">
+        <h3>3</h3>
+        <h5> Tu objetivo, encontrar el planeta indicado por la flecha en el centro del dashboard, en el menor tiempo
+          posible. </h5>
+        <img src="../textures/bg_menu/spaceship.png" width="20%" height="20%" alt="arrow_controls">
 
+      </div>
+      <div class="w3-container w3-black">
+
+      </div>
     </div>
-    <div class="w3-container w3-black">
-      
-  </div>
-</div>
 
 
 </body>
-</html>
 
+</html>

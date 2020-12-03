@@ -151,6 +151,7 @@ function decreaseCounter() {
 
 function resetCamera() {
     locations = []
+
     let loc1 = new THREE.Vector3(0, 0, 1000);
     locations.push(loc1);
     loc1 = new THREE.Vector3(1000, 5000, 1000);
@@ -166,8 +167,6 @@ function resetCamera() {
 
     selecter = Math.floor(Math.random() * 6);
     camera.position.copy(locations[selecter]);
-
-
 }
 
 /**
@@ -645,7 +644,6 @@ function createScene() {
     firstSystem.newPlanet(planetA3, 0, 0.01, 0.009, 0.01, 7, sun_a.position.x, sun_a.position.y);
     all_textures.splice(random_texture_index, 1);
 
-
     random_texture_index = Math.round(Math.random() * 12);
     let planetA4 = addPlanet(110, 1800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
     firstSystem.newPlanet(planetA4, 0, 0.01, 0.005, 0.02, 6, sun_a.position.x, sun_a.position.y);
@@ -783,8 +781,6 @@ function scoreboardScene(time) {
 }
 
 
-//sb.style.display = "none";
-
 function generateRandom(max_pos, min_pos) {
     setInterval(function () {
         let rand_x = Math.random() * (max_pos - min_pos) + min_pos;
@@ -917,50 +913,6 @@ async function loadObj(objModelUrl, objectList, x, y, z) {
         return onError(err);
     }
 }
-
-
-async function loadObj(objModelUrl, objectList, x, y, z) {
-    const objPromiseLoader = promisifyLoader(new THREE.OBJLoader());
-    try {
-        const object = await objPromiseLoader.load(objModelUrl.obj);
-
-        let texture = objModelUrl.hasOwnProperty('map') ? new THREE.TextureLoader().load(objModelUrl.map) : null;
-        let normalMap = objModelUrl.hasOwnProperty('normalMap') ? new THREE.TextureLoader().load(objModelUrl.normalMap) : null;
-        let specularMap = objModelUrl.hasOwnProperty('specularMap') ? new THREE.TextureLoader().load(objModelUrl.specularMap) : null;
-        let scale = objModelUrl.hasOwnProperty('scale') ? objModelUrl.scale : null;
-
-        object.traverse(function (child) {
-            if (child instanceof THREE.Mesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-                child.material.map = texture;
-                child.material.normalMap = normalMap;
-                child.material.specularMap = specularMap;
-            }
-        });
-
-        object.scale.set(scale, scale, scale);
-        object.position.z = z;
-        object.position.x = x;
-        object.position.y = y;
-        object.rotation.y = 2 * Math.PI;
-        object.name = "Spaceship";
-
-        let PivotPoint = new THREE.Object3D;
-
-        PivotPoint.add(object);
-        PivotPoint.position.z = z;
-        PivotPoint.position.x = x;
-        PivotPoint.position.y = y;
-        if (texture)
-            PivotPoint.rotation.y = Math.floor(Math.random() * 360);
-        objectList.add(PivotPoint);
-    }
-    catch (err) {
-        return onError(err);
-    }
-}
-
 
 
 function updateRotation() {
