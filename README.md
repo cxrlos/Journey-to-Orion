@@ -10,12 +10,12 @@
 - [Juan Francisco Gortarez](https://github.com/)
 
 ## Link to Project:
-[here](http://journey2orion.ga/game/)
+[Journey 2 Orion](http://journey2orion.ga/game/)
 
 ## Description
 Journey to Orion is a Space Exploration Simulator that puts you in the cockpit of a small spaceship in a big galaxy! Explore a vast 3D system with procedurally generated planets, ships, and asteroids, and attempt to reach different planets while keeping yourself safe from obstacles and avoiding collisions with tiny and not-so-tiny balls of rock. 
 
-![J20](menu.png =100x20)
+![J20](./menu.png =100x20)
 
 ## Dependencies
 The libraries used for the development are the following:
