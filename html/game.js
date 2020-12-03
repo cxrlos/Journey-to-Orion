@@ -33,6 +33,9 @@ let last_position = 0, current_position = 0;
 let line, pivot_line;
 let ring_y, ring_x, ring_z;
 
+let planeUUID = null;
+let collisionUUID = null;
+
 let acceleration = 0.2;
 let maxSpeed = 25;
 let currentSpeed = null;
@@ -117,10 +120,19 @@ document.addEventListener('collision', onCollision, false);
 
 function onCollision(event) {
 
-    scoreboardScene(clock.elapsedTime);
-    resetCamera();
-    clock.stop();
-    clock.start();
+    if (collisionUUID != randomPlanet.uuid) {
+        loserScene();
+        resetCamera();
+        clock.stop();
+        clock.start();
+    }
+
+    else {
+        scoreboardScene(clock.elapsedTime);
+        resetCamera();
+        clock.stop();
+        clock.start();
+    }
 
 }
 
@@ -165,18 +177,10 @@ function resetCamera() {
 class System {
     constructor() {
         this.planets = [];
-        this.bounding = [];
     }
     newPlanet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y) {
         let p = new Planet(object, moons, axis_speed, sun_speed, moon_speed, radius, sun_x, sun_y);
         this.planets.push(p);
-
-        // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-        // boundingBox.setFromObject(p.object);
-        // let boxHelper = new THREE.Box3Helper(boundingBox, 0xffffff);
-        // // helper.visible = false;
-        // this.bounding.push(boxHelper);
-        // scene.add(boxHelper);
     }
 }
 
@@ -206,11 +210,11 @@ class Planet {
 
         // let boundingBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
         // boundingBox.setFromObject(p.object);
-        this.boundingBox = new THREE.BoxHelper(this.object, 0xffffff);
-        this.boundingBox.update();
-        this.boundingBox.visible = true;
+        // this.boundingBox = new THREE.BoxHelper(this.object, 0xffffff);
+        // this.boundingBox.update();
+        // this.boundingBox.visible = true;
         // helper.visible = false;
-        scene.add(this.boundingBox);
+        // scene.add(this.boundingBox);
 
         // Add all other objects to pivotSun
         this.pivotSun.add(this.all);
@@ -260,6 +264,8 @@ function animate() {
     // Update scene controls
     controls.update(clock.getDelta());
 
+    //let player - new THREE.Vector3(camera.position);
+
     let timer = Date.now();
     let delta = timer - loopStart;
 
@@ -283,7 +289,10 @@ function animate() {
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
-        planet.boundingBox.update();
+        // planet.boundingBox.update();
+        // boxCollision = planet.collisionObj.containsPoint(player);
+        // if(boxCollision)
+        //     document.dispatchEvent(collideEvent);
     });
 
     // SecondSystem: Update all planets in planet array
@@ -294,7 +303,7 @@ function animate() {
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
-        planet.boundingBox.update();
+        // planet.boundingBox.update();
     });
 
     // ThirdSystem: Update all planets in planet array
@@ -305,7 +314,7 @@ function animate() {
         planet.privotCenter.rotation.z += planet.moon_speed;
         // Update rotation of planet around sun (orbital rotation)
         planet.pivotSun.rotation.z += planet.sun_speed;
-        planet.boundingBox.update();
+        // planet.boundingBox.update();
     });
     //Asteroid rotation
     firstAsteroids.children.forEach(asteroid => {
@@ -361,9 +370,17 @@ function animate() {
             sensorImage.copy(figure);
             overlayText.innerHTML = "Distance: " + Math.round(intersects[0].distance) + " km";
 
+            // console.log(intersects[0].object.uuid);
+            // console.log(randomPlanet.uuid);
+            // console.log(planeUUID);
+            let intersectUUID = intersects[0].uuid;
+
             //Collision placeholder
             if (Math.round(intersects[0].distance) < 40) {
-                document.dispatchEvent(collideEvent);
+                if(intersectUUID != planeUUID || intersectUUID == null){
+                    collisionUUID = intersectUUID;
+                    document.dispatchEvent(collideEvent);
+                }
             }
         }
 
@@ -484,6 +501,7 @@ function createScene() {
     let plane = new THREE.Mesh(plane_geometry, plane_material);
     plane.position.set(0, 0, -20);
     plane.rotation.set(0, 0, 0);
+    planeUUID = plane.uuid;
     camera.add(plane);
 
 
@@ -698,6 +716,28 @@ function createScene() {
 
 function timeSort(a, b) {
     return a - b;
+}
+
+
+function loserScene() {
+    // Creation of renderer and setting size to browser window size
+
+    let sb = document.getElementById("scoreboard");
+    let sbText = "Scoreboard: <br>"
+    scoreboard.sort(timeSort);
+    scoreLen = scoreboard.length;
+
+    if (scoreLen > 10) {
+        scoreLen = 10;
+    }
+
+    for (i = 0; i < scoreLen; i++) {
+        sbText = sbText + " " + (i + 1) + ". \t" + Math.round(scoreboard[i]) + "s. " + "<br>";
+    }
+    sbText = sbText + "<br>" + "You collided with an astral object! Try again to get into the scoreboard!";
+    sb.innerHTML = sbText;
+    sb.style.display = "block";
+
 }
 
 function scoreboardScene(time) {
@@ -917,7 +957,7 @@ function updateRotation() {
 
         ring_x.rotation.set(current_rotation_x, current_rotation_y, current_rotation_z);
         let rotation_element = document.getElementById("rotation");
-        rotation_element.innerHTML = "Rotation: " + rot_x + ", " + rot_y + ", " + rot_y;
+        rotation_element.innerHTML = "Rotation: " + rot_x + ", " + rot_y + ", " + rot_z;
 
     }, 1000);
 }
