@@ -642,22 +642,22 @@ function createScene() {
 
     random_texture_index = Math.round(Math.random() * 15);
     let planetA1 = addPlanet(100, 60, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    firstSystem.newPlanet(planetA1, 0, 0.01, 0.01, 0.02, 5, sun_a.position.x, sun_a.position.y);
+    firstSystem.newPlanet(planetA1, 0, 0.001, 0.001, 0.02, 5, sun_a.position.x, sun_a.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 14);
     let planetA2 = addPlanet(130, 850, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    firstSystem.newPlanet(planetA2, 0, 0.01, 0.008, 0.01, 6, sun_a.position.x, sun_a.position.y);
+    firstSystem.newPlanet(planetA2, 0, 0.001, 0.008, 0.01, 6, sun_a.position.x, sun_a.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 13);
     let planetA3 = addPlanet(80, 1100, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    firstSystem.newPlanet(planetA3, 0, 0.01, 0.009, 0.01, 7, sun_a.position.x, sun_a.position.y);
+    firstSystem.newPlanet(planetA3, 0, 0.001, 0.009, 0.01, 7, sun_a.position.x, sun_a.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 12);
     let planetA4 = addPlanet(110, 1800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    firstSystem.newPlanet(planetA4, 0, 0.01, 0.005, 0.02, 6, sun_a.position.x, sun_a.position.y);
+    firstSystem.newPlanet(planetA4, 0, 0.001, 0.005, 0.02, 6, sun_a.position.x, sun_a.position.y);
     all_textures.splice(random_texture_index, 1);
 
 
@@ -668,28 +668,28 @@ function createScene() {
     scene.add(sun_b);
 
     random_texture_index = Math.round(Math.random() * 11);
-    let planetB1 = addPlanet(120, 400, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    secondSystem.newPlanet(planetB1, 0, 0.01, 0.01, 0.02, 5, sun_b.position.x, sun_b.position.y);
+    let planetB1 = addPlanet(120, 500, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB1, 0, 0.001, 0.001, 0.002, 5, sun_b.position.x, sun_b.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 10);
-    let planetB2 = addPlanet(90, 800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    secondSystem.newPlanet(planetB2, 0, 0.01, 0.008, 0.01, 6, sun_b.position.x, sun_b.position.y);
+    let planetB2 = addPlanet(90, 1000, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB2, 0, 0.001, 0.008, 0.001, 6, sun_b.position.x, sun_b.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 9);
-    let planetB3 = addPlanet(80, 1200, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    secondSystem.newPlanet(planetB3, 0, 0.01, 0.009, 0.01, 7, sun_b.position.x, sun_b.position.y);
+    let planetB3 = addPlanet(80, 1500, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB3, 0, 0.001, 0.009, 0.001, 7, sun_b.position.x, sun_b.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 8);
-    let planetB4 = addPlanet(150, 1600, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    secondSystem.newPlanet(planetB4, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
+    let planetB4 = addPlanet(150, 2000, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB4, 0, 0.001, 0.005, 0.002, 6, sun_b.position.x, sun_b.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 7);
-    let planetB5 = addPlanet(95, 2400, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    secondSystem.newPlanet(planetB5, 0, 0.01, 0.005, 0.02, 6, sun_b.position.x, sun_b.position.y);
+    let planetB5 = addPlanet(95, 2700, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    secondSystem.newPlanet(planetB5, 0, 0.001, 0.005, 0.002, 6, sun_b.position.x, sun_b.position.y);
     all_textures.splice(random_texture_index, 1);
 
 
@@ -701,22 +701,22 @@ function createScene() {
 
     random_texture_index = Math.round(Math.random() * 6);
     let planetC1 = addPlanet(150, 1000, 2.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    thirdSystem.newPlanet(planetC1, 0, 0.01, 0.01, 0.02, 5, sun_c.position.x, sun_c.position.y);
+    thirdSystem.newPlanet(planetC1, 0, 0.001, 0.001, 0.002, 5, sun_c.position.x, sun_c.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 5);
-    let planetC2 = addPlanet(400, 1200, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    thirdSystem.newPlanet(planetC2, 0, 0.01, 0.008, 0.01, 6, sun_c.position.x, sun_c.position.y);
+    let planetC2 = addPlanet(400, 1800, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    thirdSystem.newPlanet(planetC2, 0, 0.001, 0.008, 0.0001, 6, sun_c.position.x, sun_c.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 4);
-    let planetC3 = addPlanet(120, 1400, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    thirdSystem.newPlanet(planetC3, 0, 0.01, 0.009, 0.01, 7, sun_c.position.x, sun_c.position.y);
+    let planetC3 = addPlanet(120, 2000, 3.5, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    thirdSystem.newPlanet(planetC3, 0, 0.001, 0.009, 0.001, 7, sun_c.position.x, sun_c.position.y);
     all_textures.splice(random_texture_index, 1);
 
     random_texture_index = Math.round(Math.random() * 3);
-    let planetC4 = addPlanet(90, 1600, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
-    thirdSystem.newPlanet(planetC4, 0, 0.01, 0.005, 0.02, 6, sun_c.position.x, sun_c.position.y);
+    let planetC4 = addPlanet(90, 2500, 3, "../models/planets/" + all_textures[random_texture_index], 1, 0, "");
+    thirdSystem.newPlanet(planetC4, 0, 0.001, 0.005, 0.0002, 6, sun_c.position.x, sun_c.position.y);
     all_textures.splice(random_texture_index, 1);
 
     // Asteroid generation
